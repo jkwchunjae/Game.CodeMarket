@@ -1,10 +1,4 @@
-<Query Kind="Program">
-  <Namespace>System.Threading.Tasks</Namespace>
-</Query>
-
-#load "../basecode"
-
-//Main();
+Main();
 
 void Main()
 {
@@ -50,10 +44,15 @@ void Main()
                 // 배송지에 가서 한 번만 확인해본다.
                 if (PickItemFromDelivery() == 0)
                 {
-                    CallDeliveryNotEnoughFromShelf();
+                    CallDeliveryNotEnoughFromShelfWithOrder(order);
                 }
                 else
                 {
+                    if (HasSomeItemOrder(order))
+                    {
+                        // 일단 손에 있는 것을 먼저 넣어준다.
+                        PutInBagWithOrder(order);
+                    }
                     PutItemToShelfAll();
                 }
             }
@@ -74,13 +73,36 @@ void Main()
     }
 }
 
+/// <summary>선반에 부족한게 있으면 배송. 주문에 소다가 있으면 배송</summary>
+void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
+{
+    if (store.IsTruckAway())
+    {
+        robot.GetList().Clear();
+        
+        if (order.GetRemaining(Product.Soda) > 0)
+        {
+            for (var i = 0; i < order.GetRemaining(Product.Soda); i++)
+            {
+                robot.GetList().Add(Product.Soda);
+            }
+        }
+        
+        CountingNotEnoughFromShelf(Product.Tomato);
+        CountingNotEnoughFromShelf(Product.Pumpkin);
+        CountingNotEnoughFromShelf(Product.Bread);
 
+        CallDelivery();
+        robot.GetList().Clear();
+    }
+}
+/// <summary>선반에 부족한게 있으면 배송.</summary>
 void CallDeliveryNotEnoughFromShelf()
 {
     if (store.IsTruckAway())
     {
         robot.GetList().Clear();
-        // 다 꺼내본다. 4개 꺼내야 하는데 덜 꺼내지면 그 만큼 부족하다는 것이다.
+
         CountingNotEnoughFromShelf(Product.Tomato);
         CountingNotEnoughFromShelf(Product.Pumpkin);
         CountingNotEnoughFromShelf(Product.Bread);
@@ -153,7 +175,8 @@ int PickItemFromDelivery()
         var tomato = PickItemFromDeliveryWithProduct(Product.Tomato);
         var pumpkin = PickItemFromDeliveryWithProduct(Product.Pumpkin);
         var bread = PickItemFromDeliveryWithProduct(Product.Bread);
-        return tomato + pumpkin + bread;
+        var soda = PickItemFromDeliveryWithProduct(Product.Soda);
+        return tomato + pumpkin + bread + soda;
     }
     else
     {
@@ -209,7 +232,8 @@ int GetOrderRemaining(Order order)
     var tomato = order.GetRemaining(Product.Tomato);
     var pumpkin = order.GetRemaining(Product.Pumpkin);
     var bread = order.GetRemaining(Product.Bread);
-    return tomato + pumpkin + bread;
+    var soda = order.GetRemaining(Product.Soda);
+    return tomato + pumpkin + bread + soda;
 }
 
 void PickFromShelfWithOrder(Order order)
@@ -285,6 +309,10 @@ bool HasSomeItemOrder(Order order)
     {
         return true;
     }
+    if (HasSomeItemWithProduct(order, Product.Soda))
+    {
+        return true;
+    }
     return false;
 }
 
@@ -336,6 +364,7 @@ void PutInBagWithOrder(Order order)
     PutInBagWithProduct(order, Product.Tomato);
     PutInBagWithProduct(order, Product.Pumpkin);
     PutInBagWithProduct(order, Product.Bread);
+    PutInBagWithProduct(order, Product.Soda);
 }
 
 bool PutInBagWithProduct(Order order, Product product)
