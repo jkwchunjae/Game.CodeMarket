@@ -196,9 +196,23 @@ public interface Cell
 {
 }
 
-/// <summary>진열대를 나타냅니다. 세 API 문서에는 이 타입의 멤버가 정의되어 있지 않습니다.</summary>
+/// <summary>로봇 앞의 상품 진열대, 탁자, 선반 또는 냉장고를 나타냅니다. Robot.GetShelf()로 가져오며, 상품을 집거나 놓는 동작은 로봇의 Pick과 PutOnShelf로 수행합니다.</summary>
 public interface Shelf
 {
+    /// <summary>이 진열대에 놓이는 상품을 반환합니다. 해당 상품만 놓을 수 있습니다.</summary>
+    Product GetProduct();
+
+    /// <summary>현재 진열대의 상품 수를 반환합니다. 로봇이 이 진열대의 상품을 집을 위치에서 진열대를 바라보고 있어야 하며, 아니면 오류입니다. 멀리 있는 진열대의 재고는 Store.GetStock(x, y)로 확인합니다.</summary>
+    int GetCount();
+
+    /// <summary>진열대가 가득 찼을 때의 상품 수를 반환합니다. 로봇의 운반 용량과는 다릅니다.</summary>
+    int GetCapacity();
+
+    /// <summary>진열대가 가득 차 상품을 더 놓을 수 없는지 나타냅니다. 로봇이 이 진열대의 상품을 집을 위치에서 진열대를 바라보고 있어야 하며, 아니면 오류입니다.</summary>
+    bool IsFull();
+
+    /// <summary>진열대가 비어 집을 상품이 없는지 나타냅니다. 로봇이 이 진열대의 상품을 집을 위치에서 진열대를 바라보고 있어야 하며, 아니면 오류입니다.</summary>
+    bool IsEmpty();
 }
 
 /// <summary>손님을 나타냅니다. 세 API 문서에는 이 타입의 전체 멤버와 시그니처가 정의되어 있지 않습니다.</summary>
