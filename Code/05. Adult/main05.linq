@@ -80,12 +80,20 @@ void Main()
     }
 }
 
-/// <summary>선반에 부족한게 있으면 배송. 주문에 소다가 있으면 배송</summary>
+/// <summary>선반에 부족한게 있으면 배송. 주문에 맥주가 있으면 배송</summary>
 void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
 {
     if (store.IsTruckAway())
     {
         robot.GetList().Clear();
+
+        if (order.GetRemaining(Product.Beer) > 0)
+        {
+            for (var i = 0; i < order.GetRemaining(Product.Beer); i++)
+            {
+                robot.GetList().Add(Product.Beer);
+            }
+        }
 
         CountingNotEnoughFromShelf(Product.Tomato);
         CountingNotEnoughFromShelf(Product.Pumpkin);
@@ -159,6 +167,7 @@ void PutItemToShelfWithProduct(Product product)
     }
 }
 
+/// <summary> 트럭에서 상품을 꺼낸다. </summary>
 int PickItemFromDelivery()
 {
     if (store.IsTruckHere())
@@ -182,7 +191,8 @@ int PickItemFromDelivery()
         var bread = PickItemFromDeliveryWithProduct(Product.Bread);
         var soda = PickItemFromDeliveryWithProduct(Product.Soda);
         var milk = PickItemFromDeliveryWithProduct(Product.Milk);
-        return tomato + pumpkin + bread + soda + milk;
+        var beer = PickItemFromDeliveryWithProduct(Product.Beer);
+        return tomato + pumpkin + bread + soda + milk + beer;
     }
     else
     {
@@ -193,7 +203,7 @@ int PickItemFromDeliveryWithProduct(Product product)
 {
     GotoDelivery();
     int pickCount = 0;
-    for (var i = 0; i < 3; i++)
+    for (var i = 0; i < store.GetTruckCapacity(); i++)
     {
         if (robot.Pick(product))
         {
@@ -233,6 +243,7 @@ bool CallDelivery()
     }
 }
 
+/// <summary> 주문에서 남은 수량을 확인한다. </summary>
 int GetOrderRemaining(Order order)
 {
     var tomato = order.GetRemaining(Product.Tomato);
@@ -240,9 +251,11 @@ int GetOrderRemaining(Order order)
     var bread = order.GetRemaining(Product.Bread);
     var soda = order.GetRemaining(Product.Soda);
     var milk = order.GetRemaining(Product.Milk);
+    var beer = order.GetRemaining(Product.Beer);
     return tomato + pumpkin + bread + soda + milk;
 }
 
+/// <summary> 선반에서 주문에 필요한 만큼 담는다. </summary>
 void PickFromShelfWithOrder(Order order)
 {
     PickFromShelfWithProduct(order, Product.Tomato);
@@ -326,6 +339,10 @@ bool HasSomeItemOrder(Order order)
     {
         return true;
     }
+    if (HasSomeItemWithProduct(order, Product.Beer))
+    {
+        return true;
+    }
     return false;
 }
 
@@ -405,6 +422,7 @@ void PutInBagWithOrder(Order order)
     PutInBagWithProduct(order, Product.Bread);
     PutInBagWithProduct(order, Product.Soda);
     PutInBagWithProduct(order, Product.Milk);
+    PutInBagWithProduct(order, Product.Beer);
 }
 
 bool PutInBagWithProduct(Order order, Product product)
