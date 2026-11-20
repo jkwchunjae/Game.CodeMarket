@@ -218,12 +218,23 @@ public interface Shelf
 /// <summary>손님을 나타냅니다. 세 API 문서에는 이 타입의 전체 멤버와 시그니처가 정의되어 있지 않습니다.</summary>
 public interface Customer
 {
+    bool IsAdult();
 }
 
+/// <summary>매장 타일에 놓인 물체의 종류를 나타냅니다. 큰 물체는 여러 타일에서 같은 값을 반환합니다.</summary>
 public enum Entity
 {
+    /// <summary>토마토를 진열하는 탁자입니다.</summary>
+    TOMATO_TABLE,
+    /// <summary>빵을 진열하는 두 칸짜리 선반입니다.</summary>
+    BREAD_SHELF,
+    /// <summary>상품을 보관하고 판매하는 냉장고입니다.</summary>
+    FRIDGE,
+    /// <summary>손님의 주문을 받고 결제하는 계산대 화면입니다.</summary>
+    REGISTER,
+    /// <summary>계산대의 봉투가 놓인 타일입니다.</summary>
+    BAG,
 }
-
 public enum Season
 {
     Summer,
@@ -232,96 +243,91 @@ public enum Season
     Spring,
 }
 
-public enum Product
+/// <summary>매장에서 취급하는 상품입니다. 각 정적 멤버는 해당 상품 객체를 나타냅니다.</summary>
+public interface Product
 {
+    /// <summary>이 상품이 주류인지 나타냅니다.</summary>
+    bool IsAlcohol();
+    /// <summary>미성년자에게 판매할 수 없는 상품인지 나타냅니다. 주류와 담배가 해당합니다.</summary>
+    bool IsAdultsOnly();
+    /// <summary>스테이크나 트러플 같은 프리미엄 상품인지 나타냅니다.</summary>
+    bool IsPremium();
+    /// <summary>자판기에서 판매하는 상품인지 나타냅니다.</summary>
+    bool IsVending();
+    /// <summary>커피처럼 무한 공급되어 재고 보충이 필요 없는 상품인지 나타냅니다.</summary>
+    bool IsInfinite();
+    /// <summary>캐비아나 바닷가재 같은 최고급 상품인지 나타냅니다.</summary>
+    bool IsElite();
+    /// <summary>상품의 기본 판매 가격을 반환합니다. 매장 배율이 적용된 실제 판매 금액과는 다릅니다.</summary>
+    int GetPrice();
+    /// <summary>게임 언어로 표시되는 상품 이름을 반환합니다.</summary>
+    string GetName();
+    /// <summary>이 상품이 진열되는 물체의 종류를 반환합니다.</summary>
+    Entity GetRack();
+    /// <summary>주문 가능한 계절을 반환합니다. 사계절 상품이면 null입니다.</summary>
+    Season? GetSeason();
+    /// <summary>현재 계절에 주문할 수 있는 상품인지 나타냅니다.</summary>
+    bool IsInSeason();
+
     /// <summary>토마토.</summary>
-    Tomato,
-
+    static Product Tomato;
     /// <summary>호박.</summary>
-    Pumpkin,
-
+    static Product Pumpkin;
     /// <summary>빵.</summary>
-    Bread,
-
+    static Product Bread;
     /// <summary>청량음료.</summary>
-    Soda,
-
+    static Product Soda;
     /// <summary>맥주. 성인 전용 주류입니다.</summary>
-    Beer,
-
+    static Product Beer;
     /// <summary>담배. 성인 전용 상품입니다.</summary>
-    Cigarettes,
-
+    static Product Cigarettes;
     /// <summary>와인. 성인 전용 주류입니다.</summary>
-    Wine,
-
+    static Product Wine;
     /// <summary>우유.</summary>
-    Milk,
-
+    static Product Milk;
     /// <summary>튤립. 봄에만 배송 주문할 수 있습니다.</summary>
-    Tulips,
-
+    static Product Tulips;
     /// <summary>꿀. 가을에만 배송 주문할 수 있습니다.</summary>
-    Honey,
-
+    static Product Honey;
     /// <summary>수박. 여름에만 배송 주문할 수 있습니다.</summary>
-    Watermelon,
-
+    static Product Watermelon;
     /// <summary>귤. 겨울에만 배송 주문할 수 있습니다.</summary>
-    Tangerine,
-
+    static Product Tangerine;
     /// <summary>딸기. 여름에만 배송 주문할 수 있습니다.</summary>
-    Strawberry,
-
+    static Product Strawberry;
     /// <summary>부활절 케이크. 봄에만 배송 주문할 수 있습니다.</summary>
-    Eastercake,
-
+    static Product Eastercake;
     /// <summary>불꽃놀이. 겨울에만 배송 주문할 수 있습니다.</summary>
-    Fireworks,
-
+    static Product Fireworks;
     /// <summary>판매용 크리스마스트리. 겨울에만 배송 주문할 수 있습니다.</summary>
-    Tree,
-
+    static Product Tree;
     /// <summary>마블링 스테이크. 프리미엄 상품입니다.</summary>
-    Steak,
-
+    static Product Steak;
     /// <summary>트러플. 프리미엄 상품입니다.</summary>
-    Truffle,
-
+    static Product Truffle;
     /// <summary>블랙 캐비아. 최고급 상품입니다.</summary>
-    Caviar,
-
+    static Product Caviar;
     /// <summary>바닷가재. 최고급 상품입니다.</summary>
-    Lobster,
-
+    static Product Lobster;
     /// <summary>초콜릿. 자판기에서 판매합니다.</summary>
-    Chocolate,
-
+    static Product Chocolate;
     /// <summary>팝콘. 자판기에서 판매합니다.</summary>
-    Popcorn,
-
+    static Product Popcorn;
     /// <summary>커피. 커피 머신에서 무한 공급되어 보충할 필요가 없습니다.</summary>
-    Coffee,
-
+    static Product Coffee;
     /// <summary>아이스크림. 여름에만 배송 주문할 수 있습니다.</summary>
-    Icecream,
-
+    static Product Icecream;
     /// <summary>잼. 가을에만 배송 주문할 수 있습니다.</summary>
-    Jam,
-
+    static Product Jam;
     /// <summary>비료. 봄에만 배송 주문할 수 있습니다.</summary>
-    Fertilizer,
-
+    static Product Fertilizer;
     /// <summary>가면. 가을에만 배송 주문할 수 있습니다.</summary>
-    Mask,
-
+    static Product Mask;
     /// <summary>위스키. 성인 전용 주류이며 프리미엄 상품입니다.</summary>
-    Whisky,
-
+    static Product Whisky;
     /// <summary>코냑. 성인 전용 주류이며 최고급 상품입니다.</summary>
-    Cognac,
+    static Product Cognac;
 }
-
 public enum Direction
 {
     Up,
