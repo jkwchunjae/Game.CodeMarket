@@ -24,9 +24,6 @@ void Main()
         var order = TakeOrder();
         if (order != null) // 주문이 있으면
         {
-            var customer = GetCustomer();
-            RemoveAdultOnlyProduct(order, customer);
-            RemoveAlcoholWhenNight(order);
 
             // 남는 것이 있을 때 까지 계속 뭔가 한다.
             while (GetOrderRemaining(order) > 0)
@@ -424,6 +421,11 @@ bool IsAlcoholAllowedTime()
     }
     return false;
 }
+/// <summary>특정 계절에만 주문할 수 있는 상품이 있다. 계절에 맞지 않으면 주문에서 뺀다.</summary>
+void RemoveWhenNotSeason(Order order)
+{
+    RemoveItem(order, item => item.IsInSeason() == false);
+}
 void RemoveItem(Order order, Func<Product, bool> condition)
 {
     var products = order.GetProducts();
@@ -435,10 +437,21 @@ void RemoveItem(Order order, Func<Product, bool> condition)
         }
     }
 }
+/// <summary>주문을 받고, 올바른 내용물만 남긴다. 시간, 계절, 성인</summary>
 Order TakeOrder()
 {
     GotoRegister();
     var order = robot.TakeOrder();
+    var customer = GetCustomer();
+    if (order != null)
+    {
+        RemoveAlcoholWhenNight(order);
+        RemoveWhenNotSeason(order);
+        if (customer != null)
+        {
+            RemoveAdultOnlyProduct(order, customer);
+        }
+    }
     return order;
 }
 
