@@ -26,6 +26,7 @@ void Main()
         {
             var customer = GetCustomer();
             RemoveAdultOnlyProduct(order, customer);
+            RemoveAlcoholWhenNight(order);
 
             // 남는 것이 있을 때 까지 계속 뭔가 한다.
             while (GetOrderRemaining(order) > 0)
@@ -384,21 +385,53 @@ int CarriedCount(Product product)
     return myCount;
 }
 
+/// <summary>미성년자는 맥주, 담배를 살 수 없다.</summary>
 void RemoveAdultOnlyProduct(Order order, Customer customer)
+{
+    if (IsKids(customer))
+    {
+        RemoveItem(order, item => item.IsAdultsOnly());
+    }
+}
+bool IsKids(Customer customer)
 {
     if (customer != null)
     {
         if (customer.IsAdult() == false)
         {
-            // 어린이에게는 주류, 담배를 팔면 안된다.
-            var products = order.GetProducts();
-            foreach (var item in products)
-            {
-                if (item.IsAdultsOnly())
-                {
-                    order.Remove(item);
-                }
-            }
+            return true;
+        }
+    }
+    return false;
+}
+/// <summary>밤에는 주류를 판매하면 안된다.</summary>
+void RemoveAlcoholWhenNight(Order order)
+{
+    if (IsAlcoholAllowedTime() == false)
+    {
+        RemoveItem(order, item => item.IsAlcohol());
+    }
+}
+bool IsAlcoholAllowedTime()
+{
+    var hour = store.GetHour();
+    if (hour >= 6)
+    {
+        if (hour < 22)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+void RemoveItem(Order order, Func<Product, bool> condition)
+{
+    var products = order.GetProducts();
+    foreach (var item in products)
+    {
+        if (condition(item))
+        {
+            order.Remove(item);
         }
     }
 }
