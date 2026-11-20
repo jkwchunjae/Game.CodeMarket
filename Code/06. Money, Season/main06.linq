@@ -2,6 +2,8 @@
 
 #load "../basecode"
 
+bool traverseReverse = true;
+
 //Main();
 
 void Main()
@@ -78,6 +80,7 @@ void Main()
     }
 }
 
+
 /// <summary>선반에 부족한게 있으면 배송. 주문에 맥주가 있으면 배송</summary>
 void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
 {
@@ -94,12 +97,26 @@ void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
             }
         }
 
-        CountingNotEnoughFromShelf(Product.Tomato);
-        CountingNotEnoughFromShelf(Product.Pumpkin);
-        CountingNotEnoughFromShelf(Product.Bread);
-        CountingNotEnoughFromShelf(Product.Soda);
-        CountingNotEnoughFromShelf(Product.Milk);
-        CountingNotEnoughFromShelf(Product.Beer);
+        if (traverseReverse)
+        {
+            CountingNotEnoughFromShelf(Product.Tomato);
+            CountingNotEnoughFromShelf(Product.Pumpkin);
+            CountingNotEnoughFromShelf(Product.Bread);
+            CountingNotEnoughFromShelf(Product.Beer);
+            CountingNotEnoughFromShelf(Product.Soda);
+            CountingNotEnoughFromShelf(Product.Milk);
+            traverseReverse = false;
+        }
+        else
+        {
+            CountingNotEnoughFromShelf(Product.Milk);
+            CountingNotEnoughFromShelf(Product.Soda);
+            CountingNotEnoughFromShelf(Product.Beer);
+            CountingNotEnoughFromShelf(Product.Bread);
+            CountingNotEnoughFromShelf(Product.Pumpkin);
+            CountingNotEnoughFromShelf(Product.Tomato);
+            traverseReverse = true;
+        }
 
         CallDelivery();
         robot.GetList().Clear();
@@ -112,12 +129,26 @@ void CallDeliveryNotEnoughFromShelf()
     {
         robot.GetList().Clear();
 
-        CountingNotEnoughFromShelf(Product.Tomato);
-        CountingNotEnoughFromShelf(Product.Pumpkin);
-        CountingNotEnoughFromShelf(Product.Bread);
-        CountingNotEnoughFromShelf(Product.Beer);
-        CountingNotEnoughFromShelf(Product.Soda);
-        CountingNotEnoughFromShelf(Product.Milk);
+        if (traverseReverse)
+        {
+            CountingNotEnoughFromShelf(Product.Tomato);
+            CountingNotEnoughFromShelf(Product.Pumpkin);
+            CountingNotEnoughFromShelf(Product.Bread);
+            CountingNotEnoughFromShelf(Product.Beer);
+            CountingNotEnoughFromShelf(Product.Soda);
+            CountingNotEnoughFromShelf(Product.Milk);
+            traverseReverse = false;
+        }
+        else
+        {
+            CountingNotEnoughFromShelf(Product.Milk);
+            CountingNotEnoughFromShelf(Product.Soda);
+            CountingNotEnoughFromShelf(Product.Beer);
+            CountingNotEnoughFromShelf(Product.Bread);
+            CountingNotEnoughFromShelf(Product.Pumpkin);
+            CountingNotEnoughFromShelf(Product.Tomato);
+            traverseReverse = true;
+        }
 
         CallDelivery();
         robot.GetList().Clear();

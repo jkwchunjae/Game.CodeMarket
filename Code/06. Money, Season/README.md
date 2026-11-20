@@ -21,6 +21,33 @@
 야자수가 효율이 좋다는 것을 알았다.   
 나는 치밀하게 계산하는 타입이 아니어서 적당히 좋아보이는 것을 사는 편이다.
 
+## 선반 순회 방법
+
+선반을 한쪽 방향으로만 순회를 했더니 마지막에 있던 우유는 재고가 잘 안채워지는 문제가 있었다.   
+매 번 방향을 반대로 순회하도록 했다.
+
+```
+if (traverseReverse)
+{
+    CountingNotEnoughFromShelf(Product.Tomato);
+    CountingNotEnoughFromShelf(Product.Pumpkin);
+    CountingNotEnoughFromShelf(Product.Bread);
+    CountingNotEnoughFromShelf(Product.Beer);
+    CountingNotEnoughFromShelf(Product.Soda);
+    CountingNotEnoughFromShelf(Product.Milk);
+    traverseReverse = false;
+}
+else
+{
+    CountingNotEnoughFromShelf(Product.Milk);
+    CountingNotEnoughFromShelf(Product.Soda);
+    CountingNotEnoughFromShelf(Product.Beer);
+    CountingNotEnoughFromShelf(Product.Bread);
+    CountingNotEnoughFromShelf(Product.Pumpkin);
+    CountingNotEnoughFromShelf(Product.Tomato);
+    traverseReverse = true;
+}
+```
 
 ## 업그레이드도 코드로 할 수 있다면.
 만약 업그레이드도 코드에서 할 수 있다면 정말 많은 계산을 했을 것 같다.   
