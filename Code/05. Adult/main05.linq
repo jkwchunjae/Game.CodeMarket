@@ -87,19 +87,20 @@ void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
     {
         robot.GetList().Clear();
 
-        if (order.GetRemaining(Product.Beer) > 0)
-        {
-            for (var i = 0; i < order.GetRemaining(Product.Beer); i++)
-            {
-                robot.GetList().Add(Product.Beer);
-            }
-        }
+        //if (order.GetRemaining(Product.Beer) > 0)
+        //{
+        //    for (var i = 0; i < order.GetRemaining(Product.Beer); i++)
+        //    {
+        //        robot.GetList().Add(Product.Beer);
+        //    }
+        //}
 
         CountingNotEnoughFromShelf(Product.Tomato);
         CountingNotEnoughFromShelf(Product.Pumpkin);
         CountingNotEnoughFromShelf(Product.Bread);
         CountingNotEnoughFromShelf(Product.Soda);
         CountingNotEnoughFromShelf(Product.Milk);
+        CountingNotEnoughFromShelf(Product.Beer);
 
         CallDelivery();
         robot.GetList().Clear();
@@ -115,6 +116,7 @@ void CallDeliveryNotEnoughFromShelf()
         CountingNotEnoughFromShelf(Product.Tomato);
         CountingNotEnoughFromShelf(Product.Pumpkin);
         CountingNotEnoughFromShelf(Product.Bread);
+        CountingNotEnoughFromShelf(Product.Beer);
         CountingNotEnoughFromShelf(Product.Soda);
         CountingNotEnoughFromShelf(Product.Milk);
 
@@ -147,6 +149,7 @@ void PutItemToShelfAll()
         PutItemToShelfWithProduct(Product.Tomato);
         PutItemToShelfWithProduct(Product.Pumpkin);
         PutItemToShelfWithProduct(Product.Bread);
+        PutItemToShelfWithProduct(Product.Beer);
         PutItemToShelfWithProduct(Product.Soda);
         PutItemToShelfWithProduct(Product.Milk);
     }
@@ -252,7 +255,7 @@ int GetOrderRemaining(Order order)
     var soda = order.GetRemaining(Product.Soda);
     var milk = order.GetRemaining(Product.Milk);
     var beer = order.GetRemaining(Product.Beer);
-    return tomato + pumpkin + bread + soda + milk;
+    return tomato + pumpkin + bread + soda + milk + beer;
 }
 
 /// <summary> 선반에서 주문에 필요한 만큼 담는다. </summary>
@@ -261,6 +264,7 @@ void PickFromShelfWithOrder(Order order)
     PickFromShelfWithProduct(order, Product.Tomato);
     PickFromShelfWithProduct(order, Product.Pumpkin);
     PickFromShelfWithProduct(order, Product.Bread);
+    PickFromShelfWithProduct(order, Product.Beer);
     PickFromShelfWithProduct(order, Product.Soda);
     PickFromShelfWithProduct(order, Product.Milk);
 }
@@ -477,6 +481,10 @@ void GotoShelf(Product product)
     {
         GotoMilkShelf();
     }
+    else if (product == Product.Beer)
+    {
+        GotoBeerShelf();
+    }
 }
 
 void GotoTomatoShelf()
@@ -506,6 +514,12 @@ void GotoSodaShelf()
 void GotoMilkShelf()
 {
     Goto(3, 2);
+    robot.Turn(Direction.Right);
+}
+
+void GotoBeerShelf()
+{
+    Goto(3, 4);
     robot.Turn(Direction.Right);
 }
 
