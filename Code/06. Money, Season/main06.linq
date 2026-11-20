@@ -85,13 +85,14 @@ void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
     {
         robot.GetList().Clear();
 
-        //if (order.GetRemaining(Product.Beer) > 0)
-        //{
-        //    for (var i = 0; i < order.GetRemaining(Product.Beer); i++)
-        //    {
-        //        robot.GetList().Add(Product.Beer);
-        //    }
-        //}
+        var p = Product.Fertilizer;
+        if (order.GetRemaining(p) > 0)
+        {
+            for (var i = 0; i < order.GetRemaining(p); i++)
+            {
+                robot.GetList().Add(p);
+            }
+        }
 
         CountingNotEnoughFromShelf(Product.Tomato);
         CountingNotEnoughFromShelf(Product.Pumpkin);
@@ -193,7 +194,8 @@ int PickItemFromDelivery()
         var soda = PickItemFromDeliveryWithProduct(Product.Soda);
         var milk = PickItemFromDeliveryWithProduct(Product.Milk);
         var beer = PickItemFromDeliveryWithProduct(Product.Beer);
-        return tomato + pumpkin + bread + soda + milk + beer;
+        var fertilizer = PickItemFromDeliveryWithProduct(Product.Fertilizer);
+        return tomato + pumpkin + bread + soda + milk + beer + fertilizer;
     }
     else
     {
@@ -253,7 +255,8 @@ int GetOrderRemaining(Order order)
     var soda = order.GetRemaining(Product.Soda);
     var milk = order.GetRemaining(Product.Milk);
     var beer = order.GetRemaining(Product.Beer);
-    return tomato + pumpkin + bread + soda + milk + beer;
+    var fertilizer = order.GetRemaining(Product.Fertilizer);
+    return tomato + pumpkin + bread + soda + milk + beer + fertilizer;
 }
 
 /// <summary> 선반에서 주문에 필요한 만큼 담는다. </summary>
@@ -342,6 +345,10 @@ bool HasSomeItemOrder(Order order)
         return true;
     }
     if (HasSomeItemWithProduct(order, Product.Beer))
+    {
+        return true;
+    }
+    if (HasSomeItemWithProduct(order, Product.Fertilizer))
     {
         return true;
     }
@@ -473,6 +480,7 @@ void PutInBagWithOrder(Order order)
     PutInBagWithProduct(order, Product.Soda);
     PutInBagWithProduct(order, Product.Milk);
     PutInBagWithProduct(order, Product.Beer);
+    PutInBagWithProduct(order, Product.Fertilizer);
 }
 
 bool PutInBagWithProduct(Order order, Product product)
