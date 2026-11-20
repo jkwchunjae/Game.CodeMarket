@@ -24,6 +24,9 @@ void Main()
         var order = TakeOrder();
         if (order != null) // 주문이 있으면
         {
+            var customer = GetCustomer();
+            RemoveAdultOnlyProduct(order, customer);
+
             // 남는 것이 있을 때 까지 계속 뭔가 한다.
             while (GetOrderRemaining(order) > 0)
             {
@@ -84,17 +87,11 @@ void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
     {
         robot.GetList().Clear();
 
-        if (order.GetRemaining(Product.Soda) > 0)
-        {
-            for (var i = 0; i < order.GetRemaining(Product.Soda); i++)
-            {
-                robot.GetList().Add(Product.Soda);
-            }
-        }
-
         CountingNotEnoughFromShelf(Product.Tomato);
         CountingNotEnoughFromShelf(Product.Pumpkin);
         CountingNotEnoughFromShelf(Product.Bread);
+        CountingNotEnoughFromShelf(Product.Soda);
+        CountingNotEnoughFromShelf(Product.Milk);
 
         CallDelivery();
         robot.GetList().Clear();
@@ -110,6 +107,8 @@ void CallDeliveryNotEnoughFromShelf()
         CountingNotEnoughFromShelf(Product.Tomato);
         CountingNotEnoughFromShelf(Product.Pumpkin);
         CountingNotEnoughFromShelf(Product.Bread);
+        CountingNotEnoughFromShelf(Product.Soda);
+        CountingNotEnoughFromShelf(Product.Milk);
 
         CallDelivery();
         robot.GetList().Clear();
@@ -140,6 +139,8 @@ void PutItemToShelfAll()
         PutItemToShelfWithProduct(Product.Tomato);
         PutItemToShelfWithProduct(Product.Pumpkin);
         PutItemToShelfWithProduct(Product.Bread);
+        PutItemToShelfWithProduct(Product.Soda);
+        PutItemToShelfWithProduct(Product.Milk);
     }
 }
 
@@ -180,7 +181,8 @@ int PickItemFromDelivery()
         var pumpkin = PickItemFromDeliveryWithProduct(Product.Pumpkin);
         var bread = PickItemFromDeliveryWithProduct(Product.Bread);
         var soda = PickItemFromDeliveryWithProduct(Product.Soda);
-        return tomato + pumpkin + bread + soda;
+        var milk = PickItemFromDeliveryWithProduct(Product.Milk);
+        return tomato + pumpkin + bread + soda + milk;
     }
     else
     {
@@ -237,7 +239,8 @@ int GetOrderRemaining(Order order)
     var pumpkin = order.GetRemaining(Product.Pumpkin);
     var bread = order.GetRemaining(Product.Bread);
     var soda = order.GetRemaining(Product.Soda);
-    return tomato + pumpkin + bread + soda;
+    var milk = order.GetRemaining(Product.Milk);
+    return tomato + pumpkin + bread + soda + milk;
 }
 
 void PickFromShelfWithOrder(Order order)
@@ -245,6 +248,8 @@ void PickFromShelfWithOrder(Order order)
     PickFromShelfWithProduct(order, Product.Tomato);
     PickFromShelfWithProduct(order, Product.Pumpkin);
     PickFromShelfWithProduct(order, Product.Bread);
+    PickFromShelfWithProduct(order, Product.Soda);
+    PickFromShelfWithProduct(order, Product.Milk);
 }
 
 /// <summary>선반에서 주문한 수량의 일부라도 가져올 수 있는지 본다.</summary>
@@ -317,6 +322,10 @@ bool HasSomeItemOrder(Order order)
     {
         return true;
     }
+    if (HasSomeItemWithProduct(order, Product.Milk))
+    {
+        return true;
+    }
     return false;
 }
 
@@ -354,11 +363,37 @@ int CarriedCount(Product product)
     return myCount;
 }
 
+void RemoveAdultOnlyProduct(Order order, Customer customer)
+{
+    if (customer != null)
+    {
+        if (customer.IsAdult() == false)
+        {
+            // 어린이에게는 주류, 담배를 팔면 안된다.
+            var products = order.GetProducts();
+            foreach (var item in products)
+            {
+                if (item.IsAdultsOnly())
+                {
+                    order.Remove(item);
+                }
+            }
+        }
+    }
+}
 Order TakeOrder()
 {
     GotoRegister();
     var order = robot.TakeOrder();
     return order;
+}
+
+Customer GetCustomer()
+{
+    GotoRegister();
+    var customer = robot.GetCustomer();
+
+    return customer;
 }
 
 /// <summary>장바구니에 가서 손에 든 것을 내려 놓는다.</summary>
@@ -369,6 +404,7 @@ void PutInBagWithOrder(Order order)
     PutInBagWithProduct(order, Product.Pumpkin);
     PutInBagWithProduct(order, Product.Bread);
     PutInBagWithProduct(order, Product.Soda);
+    PutInBagWithProduct(order, Product.Milk);
 }
 
 bool PutInBagWithProduct(Order order, Product product)
@@ -415,6 +451,14 @@ void GotoShelf(Product product)
     {
         GotoBreadShelf();
     }
+    else if (product == Product.Soda)
+    {
+        GotoSodaShelf();
+    }
+    else if (product == Product.Milk)
+    {
+        GotoMilkShelf();
+    }
 }
 
 void GotoTomatoShelf()
@@ -433,6 +477,18 @@ void GotoBreadShelf()
 {
     Goto(1, 1);
     robot.Turn(Direction.Left);
+}
+
+void GotoSodaShelf()
+{
+    Goto(3, 3);
+    robot.Turn(Direction.Right);
+}
+
+void GotoMilkShelf()
+{
+    Goto(3, 2);
+    robot.Turn(Direction.Right);
 }
 
 void Goto(int x, int y)
