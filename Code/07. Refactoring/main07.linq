@@ -99,6 +99,7 @@ void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
 
         if (traverseReverse)
         {
+            CountingNotEnoughFromShelf(Product.Cigarettes);
             CountingNotEnoughFromShelf(Product.Tomato);
             CountingNotEnoughFromShelf(Product.Pumpkin);
             CountingNotEnoughFromShelf(Product.Bread);
@@ -115,6 +116,7 @@ void CallDeliveryNotEnoughFromShelfWithOrder(Order order)
             CountingNotEnoughFromShelf(Product.Bread);
             CountingNotEnoughFromShelf(Product.Pumpkin);
             CountingNotEnoughFromShelf(Product.Tomato);
+            CountingNotEnoughFromShelf(Product.Cigarettes);
             traverseReverse = true;
         }
 
@@ -131,6 +133,7 @@ void CallDeliveryNotEnoughFromShelf()
 
         if (traverseReverse)
         {
+            CountingNotEnoughFromShelf(Product.Cigarettes);
             CountingNotEnoughFromShelf(Product.Tomato);
             CountingNotEnoughFromShelf(Product.Pumpkin);
             CountingNotEnoughFromShelf(Product.Bread);
@@ -147,6 +150,7 @@ void CallDeliveryNotEnoughFromShelf()
             CountingNotEnoughFromShelf(Product.Bread);
             CountingNotEnoughFromShelf(Product.Pumpkin);
             CountingNotEnoughFromShelf(Product.Tomato);
+            CountingNotEnoughFromShelf(Product.Cigarettes);
             traverseReverse = true;
         }
 
@@ -176,6 +180,7 @@ void PutItemToShelfAll()
 {
     if (robot.GetCarried().Count() > 0)
     {
+        PutItemToShelfWithProduct(Product.Cigarettes);
         PutItemToShelfWithProduct(Product.Tomato);
         PutItemToShelfWithProduct(Product.Pumpkin);
         PutItemToShelfWithProduct(Product.Bread);
@@ -226,7 +231,8 @@ int PickItemFromDelivery()
         var milk = PickItemFromDeliveryWithProduct(Product.Milk);
         var beer = PickItemFromDeliveryWithProduct(Product.Beer);
         var fertilizer = PickItemFromDeliveryWithProduct(Product.Fertilizer);
-        return tomato + pumpkin + bread + soda + milk + beer + fertilizer;
+        var cigarettes = PickItemFromDeliveryWithProduct(Product.Cigarettes);
+        return tomato + pumpkin + bread + soda + milk + beer + fertilizer + cigarettes;
     }
     else
     {
@@ -287,12 +293,14 @@ int GetOrderRemaining(Order order)
     var milk = order.GetRemaining(Product.Milk);
     var beer = order.GetRemaining(Product.Beer);
     var fertilizer = order.GetRemaining(Product.Fertilizer);
-    return tomato + pumpkin + bread + soda + milk + beer + fertilizer;
+    var cigarettes = order.GetRemaining(Product.Cigarettes);
+    return tomato + pumpkin + bread + soda + milk + beer + fertilizer + cigarettes;
 }
 
 /// <summary> 선반에서 주문에 필요한 만큼 담는다. </summary>
 void PickFromShelfWithOrder(Order order)
 {
+    PickFromShelfWithProduct(order, Product.Cigarettes);
     PickFromShelfWithProduct(order, Product.Tomato);
     PickFromShelfWithProduct(order, Product.Pumpkin);
     PickFromShelfWithProduct(order, Product.Bread);
@@ -380,6 +388,10 @@ bool HasSomeItemOrder(Order order)
         return true;
     }
     if (HasSomeItemWithProduct(order, Product.Fertilizer))
+    {
+        return true;
+    }
+    if (HasSomeItemWithProduct(order, Product.Cigarettes))
     {
         return true;
     }
@@ -512,6 +524,7 @@ void PutInBagWithOrder(Order order)
     PutInBagWithProduct(order, Product.Milk);
     PutInBagWithProduct(order, Product.Beer);
     PutInBagWithProduct(order, Product.Fertilizer);
+    PutInBagWithProduct(order, Product.Cigarettes);
 }
 
 bool PutInBagWithProduct(Order order, Product product)
@@ -570,6 +583,10 @@ void GotoShelf(Product product)
     {
         GotoBeerShelf();
     }
+    else if (product == Product.Cigarettes)
+    {
+        GotoCigarettesShelf();
+    }
 }
 
 void GotoTomatoShelf()
@@ -606,6 +623,12 @@ void GotoBeerShelf()
 {
     Goto(3, 4);
     robot.Turn(Direction.Right);
+}
+
+void GotoCigarettesShelf()
+{
+    Goto(1, 4);
+    robot.Turn(Direction.Left);
 }
 
 void Goto(int x, int y)
