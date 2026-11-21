@@ -423,13 +423,15 @@ class ServingRobot : MyRobot
 
 class ShelfData
 {
-    public Shelf Shelf { get; private set; }
+    public Product Product { get; private set; }
+    public int Capacity { get; private set;}
     public List<MyCell> Cells { get; private set; }
-    public ShelfData(MyCell cell, Shelf shelf)
+    public ShelfData(MyCell cell, Product product, int capacity)
     {
-        Cells = new();
+        Cells = new List<MyCell>();
         Cells.Add(cell);
-        Shelf = shelf;
+        Product = product;
+        Capacity = capacity;
     }
 }
 class DeliveryRobot : MyRobot
@@ -491,7 +493,7 @@ class DeliveryRobot : MyRobot
                 var shelf = robot.GetShelf();
                 var shelfCapacity = shelf.GetCapacity();
                 var entity = _static.GetEntityFromProduct(cellData.Product);
-                var shelfData = new ShelfData(cell, shelf);
+                var shelfData = new ShelfData(cell, cellData.Product, shelf.GetCapacity());
                 _shelfs.Add(shelfData);
                 prevCell = cellData;
                 prevShelfData = shelfData;
@@ -512,7 +514,7 @@ class DeliveryRobot : MyRobot
         Goto(target);
         robot.Turn(store.GetGarageSide());
     }
-    record ShelfOrder(Shelf Shelf, int EmptyCount, double Random);
+    record ShelfOrder(Product Product, int EmptyCount, double Random);
     /// <summary>배송 요청한다.</summary>
     private void CallDelivery()
     {
@@ -522,8 +524,7 @@ class DeliveryRobot : MyRobot
         // 빈 공간이 많은 순으로 주문한다.
         // 빈 공간이 같다면 랜덤을 사용해서 순서를 섞는다.
         var orderShelfs = _shelfs
-            .Select(x => x.Shelf)
-            .Select(x => new ShelfOrder(x, x.GetCapacity() - x.GetCount(), Random.Shared.Next()))
+            .Select(x => new ShelfOrder(x.Product, x.Capacity - store.GetStock(x.Cells.First().X, x.Cells.First().Y), Random.Shared.Next()))
             .OrderByDescending(x => x.EmptyCount)
             .ThenBy(x => x.Random)
             .ToArray();
@@ -531,7 +532,7 @@ class DeliveryRobot : MyRobot
         robot.GetList().Clear();
         foreach (var shelf in orderShelfs)
         {
-            robot.GetList().Add(shelf.Shelf.GetProduct());
+            robot.GetList().Add(shelf.Product);
             if (robot.GetList().Count() >= store.GetTruckCapacity())
             {
                 break;
