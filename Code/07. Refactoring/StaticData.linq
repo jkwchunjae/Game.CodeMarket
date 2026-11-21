@@ -8,6 +8,8 @@ record EntityProductPair(Entity Entity, Product Product);
 
 interface IStaticData
 {
+    /// <summary> 지금 내가 판매할 수 있는 상품 목록을 구한다. </summary>
+    Product[] AvailableProducts();
     /// <summary> 진열대와 상품의 짝을 구한다. </summary>
     EntityProductPair[] GetEntityProductPair();
     /// <summary> 진열대에 진열할 수 있는 상품을 구한다.</summary>
@@ -27,6 +29,13 @@ class StaticData : IStaticData
         _productEntityPairDic = GetEntityProductPair()
             .ToDictionary(x => x.Product, x => x.Entity);
     }
+    public Product[] AvailableProducts()
+    {
+        return GetEntityProductPair()
+            .Select(x => x.Product)
+            .ToArray();
+    }
+
     public EntityProductPair[] GetEntityProductPair()
     {
         return [

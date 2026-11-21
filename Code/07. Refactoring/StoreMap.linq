@@ -5,7 +5,13 @@
 #load "../basecode"
 #load "./StaticData"
 
-record MyCell(int X, int Y);
+record MyCell(int X, int Y)
+{
+    public bool Equal(MyCell cell)
+    {
+        return X == cell.X && Y == cell.Y;
+    }
+}
 /// <summary>Cell에서 Direction방향을 보면 Product를 잡을 수 있다</summary>
 record CellProductPair(MyCell Cell, Product Product, Direction Direction)
 {
@@ -17,10 +23,13 @@ record CellProductPair(MyCell Cell, Product Product, Direction Direction)
 interface IStoreMap
 {
     /// <summary> 배송 로봇의 전체 이동 경로. 실제로는 들고있는 제품에 따라서 달라질 수 있다. </summary>
-    MyCell[] GetDeliveryCells();
+    MyCell[] GetShelfCells();
     /// <summary> 선반 앞에 서있는지 확인한다.</summary>
     bool IsFrontOfShelf(MyCell cell);
-    CellProductPair GetCellProductPair(MyCell cell);
+    /// <summary>현재 위치에서 접근할 수 있는 선반 정보</summary>
+    CellProductPair? GetCellProductPair(MyCell cell);
+    ///
+    CellProductPair? GetCellProductPairWithProduct(Product product);
 }
 class StoreMap : IStoreMap
 {
@@ -43,10 +52,10 @@ class StoreMap : IStoreMap
                 var entity = store.GetEntity(x, y);
                 if (entity != null)
                 {
-                    var product = staticData.GetProductFromEntity(entity);
+                    var product = staticData.GetProductFromEntity(entity.Value);
                     if (product != null)
                     {
-                        var pickupData = GetPickupData(x, y, product);
+                        var pickupData = GetPickupData(x, y, product.Value);
                         cellProductList.Add(pickupData);
                     }
                 }
@@ -66,8 +75,7 @@ class StoreMap : IStoreMap
         {
             return new(new MyCell(x + 1, y), product, Direction.Left);
         }
-        throw new UnreachableException();
-        //return null;
+        return null;
     }
     /// <summary>(x, y)에서 물건을 집을 수 있는지 확인한다.</summary>
     private bool IsPickupCell(int x, int y, Product product)
@@ -84,6 +92,39 @@ class StoreMap : IStoreMap
         {
             return false;
         }
+    }
+    
+    public MyCell[] GetShelfCells()
+    {
+        MyCell[] cells = new MyCell[]
+        {
+            new MyCell(2, 6),
+            new MyCell(2, 5),
+            new MyCell(2, 4),
+            new MyCell(2, 3),
+            new MyCell(3, 3),
+            new MyCell(3, 4),
+            new MyCell(3, 5),
+            new MyCell(3, 6),
+        };
+        return cells;
+    }
+
+    public bool IsFrontOfShelf(MyCell cell)
+    {
+        var cellData = GetCellProductPair(cell);
+        return cellData != null;
+    }
+
+    public CellProductPair? GetCellProductPair(MyCell cell)
+    {
+        return _cellProductList
+            .FirstOrDefault(x => x.Cell.Equal(cell));
+    }
+
+    public CellProductPair? GetCellProductPairWithProduct(Product product)
+    {
+        return _cellProductList.FirstOrDefault(x => x.Product == product);
     }
 }
 
