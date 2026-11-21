@@ -92,7 +92,7 @@ public interface Store
     bool IsFree(int x, int y);
 
     /// <summary>타일 (x, y)에 있는 물체를 반환합니다. 비어 있거나 매장 밖이면 오류 없이 null입니다. x는 0부터 GetWidth() - 1, y는 0부터 GetHeight() - 1까지로 유지하세요.</summary>
-    Entity GetEntity(int x, int y);
+    Entity? GetEntity(int x, int y);
 
     /// <summary>타일 (x, y)의 계산대 화면이나 봉투에서 주문을 받을 위치인 손님 반대쪽 화면 뒤 타일을 반환합니다. 그곳에서 GetRegisterSide(x, y) 방향을 보세요. 계산대가 없거나 화면 뒤에 물체가 있으면 null입니다.</summary>
     Cell GetCashierCell(int x, int y);
@@ -224,16 +224,96 @@ public interface Customer
 /// <summary>매장 타일에 놓인 물체의 종류를 나타냅니다. 큰 물체는 여러 타일에서 같은 값을 반환합니다.</summary>
 public enum Entity
 {
-    /// <summary>토마토를 진열하는 탁자입니다.</summary>
-    TOMATO_TABLE,
-    /// <summary>빵을 진열하는 두 칸짜리 선반입니다.</summary>
-    BREAD_SHELF,
-    /// <summary>상품을 보관하고 판매하는 냉장고입니다.</summary>
-    FRIDGE,
-    /// <summary>손님의 주문을 받고 결제하는 계산대 화면입니다.</summary>
-    REGISTER,
-    /// <summary>계산대의 봉투가 놓인 타일입니다.</summary>
-    BAG,
+    /// <summary>빵 진열대</summary>
+    BreadShelf,
+    /// <summary>계산대 화면</summary>
+    Register,
+    /// <summary>음료 냉장고</summary>
+    Fridge,
+    /// <summary>호박 상자</summary>
+    PumpkinTable,
+    /// <summary>화분</summary>
+    Plant,
+    /// <summary>상자 더미</summary>
+    Boxes,
+    /// <summary>꽃</summary>
+    Flower,
+    /// <summary>토마토 판매대</summary>
+    TomatoTable,
+    /// <summary>맥주 냉장고</summary>
+    BeerFridge,
+    /// <summary>담배 진열대</summary>
+    CigaretteStand,
+    /// <summary>와인 진열대</summary>
+    WineStand,
+    /// <summary>우유 진열대</summary>
+    MilkStand,
+    /// <summary>튤립 판매대</summary>
+    TulipCounter,
+    /// <summary>꿀 가판대</summary>
+    HoneyStall,
+    /// <summary>수박 판매대</summary>
+    WatermelonTable,
+    /// <summary>귤 판매대</summary>
+    TangerineTable,
+    /// <summary>딸기 진열대</summary>
+    StrawberryStand,
+    /// <summary>부활절 케이크 판매대</summary>
+    EasterTable,
+    /// <summary>불꽃놀이 진열대</summary>
+    FireworksStand,
+    /// <summary>크리스마스트리 진열대</summary>
+    TreeStand,
+    /// <summary>입간판</summary>
+    SignBoard,
+    /// <summary>야자수</summary>
+    PalmTree,
+    /// <summary>부채야자</summary>
+    FanPalm,
+    /// <summary>고사리 (내부 타입명: Monstera)</summary>
+    Monstera,
+    /// <summary>드라세나</summary>
+    Dracaena,
+    /// <summary>스테이크 냉장 진열대</summary>
+    MeatFridge,
+    /// <summary>트러플 냉장 진열대</summary>
+    TruffleFridge,
+    /// <summary>캐비아 냉장 진열대</summary>
+    CaviarFridge,
+    /// <summary>바닷가재 냉장 진열대</summary>
+    LobsterFridge,
+    /// <summary>초콜릿 자동판매기</summary>
+    VendingMachine,
+    /// <summary>팝콘 기계</summary>
+    PopcornMachine,
+    /// <summary>커피 머신</summary>
+    CoffeeMachine,
+    /// <summary>장식용 크리스마스트리 (장식물)</summary>
+    ChristmasTree,
+    /// <summary>아이스크림 판매대</summary>
+    IceCreamCounter,
+    /// <summary>잼 판매대</summary>
+    JamTable,
+    /// <summary>비료 판매대</summary>
+    FertilizerTable,
+    /// <summary>가면 진열대</summary>
+    MaskStand,
+    /// <summary>프리미엄 위스키</summary>
+    WhiskyCabinet,
+    /// <summary>최고급 코냑</summary>
+    CognacCabinet,
+    /// <summary>수족관</summary>
+    Aquarium,
+    /// <summary>냉온수기</summary>
+    WaterCooler,
+    /// <summary>풍선</summary>
+    Balloons,
+    /// <summary>행운의 룰렛</summary>
+    FortuneWheel,
+    /// <summary>데이지</summary>
+    Daisies,
+    /// <summary>계산대의 두 번째 타일인 봉투</summary>
+    Bag,
 }
 public enum Season
 {
