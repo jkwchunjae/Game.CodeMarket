@@ -111,6 +111,7 @@ class StoreMap : IStoreMap
             new MyCell(3, 4),
             new MyCell(3, 5),
             new MyCell(3, 6),
+            new MyCell(3, 7),
         };
         return cells;
     }

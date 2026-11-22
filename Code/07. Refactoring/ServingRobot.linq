@@ -61,6 +61,8 @@ class ServingRobot : RobotBase
             new MyCell(3, 4),
             new MyCell(3, 5),
             new MyCell(3, 6),
+            new MyCell(3, 7),
+            new MyCell(2, 7),
             new MyCell(2, 6),
             new MyCell(2, 5),
             new MyCell(2, 4),

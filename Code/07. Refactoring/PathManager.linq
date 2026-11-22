@@ -41,6 +41,7 @@ class PathManager : IPathManager
     {
         return new MyCell[]
         {
+            new(2, 8),
             new(2, 7),
             new(2, 6),
             new(2, 5),
@@ -51,6 +52,7 @@ class PathManager : IPathManager
             new(3, 5),
             new(3, 6),
             new(3, 7),
+            new(3, 8),
         };
     }
 }

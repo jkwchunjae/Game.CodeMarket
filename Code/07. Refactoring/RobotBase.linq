@@ -103,7 +103,7 @@ abstract class RobotBase
                     }
                 }
             }
-            while (robot.GetX() < x && (robot.GetY() == 2 || robot.GetY() == 3 || robot.GetY() == 7))
+            while (robot.GetX() < x && (robot.GetY() == 2 || robot.GetY() == 3 || robot.GetY() == 8))
             {
                 if (robot.CanMove(Direction.Right))
                 {
@@ -115,7 +115,7 @@ abstract class RobotBase
                     break;
                 }
             }
-            while (robot.GetX() > x && (robot.GetY() == 2 || robot.GetY() == 6 || robot.GetY() == 7))
+            while (robot.GetX() > x && (robot.GetY() == 2 || robot.GetY() == 7 || robot.GetY() == 8))
             {
                 if (robot.CanMove(Direction.Left))
                 {
