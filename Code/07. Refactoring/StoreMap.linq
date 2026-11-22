@@ -11,9 +11,14 @@ record MyCell(int X, int Y)
     {
         return X == cell.X && Y == cell.Y;
     }
+    
+    public string ToStr()
+    {
+        return $"({X}, {Y})";
+    }
 }
 /// <summary>Cell에서 Direction방향을 보면 Product를 잡을 수 있다</summary>
-record CellProductPair(MyCell Cell, Product Product, Direction Direction)
+record CellProductPair(MyCell ShelfPosition, MyCell Cell, Product Product, Direction Direction)
 {
     public int X => Cell.X;
     public int Y => Cell.Y;
@@ -36,9 +41,9 @@ class StoreMap : IStoreMap
     private readonly IStaticData _static;
     private readonly List<CellProductPair> _cellProductList = new();
     
-    public StoreMap()
+    public StoreMap(IStaticData staticData)
     {
-        _static = new StaticData();
+        _static = staticData;
         _cellProductList = CreateCellData(_static);
     }
 
@@ -69,11 +74,11 @@ class StoreMap : IStoreMap
         // 진열대의 왼쪽이나 오른쪽에서만 집을 수 있다.
         if (IsPickupCell(x - 1, y, product))
         {
-            return new(new MyCell(x - 1, y), product, Direction.Right);
+            return new(new MyCell(x, y), new MyCell(x - 1, y), product, Direction.Right);
         }
         if (IsPickupCell(x + 1, y, product))
         {
-            return new(new MyCell(x + 1, y), product, Direction.Left);
+            return new(new MyCell(x, y), new MyCell(x + 1, y), product, Direction.Left);
         }
         return null;
     }

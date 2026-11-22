@@ -16,6 +16,11 @@ interface IPathManager
 
 class PathManager : IPathManager
 {
+    private readonly IStoreMap _map;
+    public PathManager(IStoreMap map)
+    {
+        _map = map;
+    }
     public bool ContainsInCell(MyCell[] cells, MyCell cell)
     {
         return cells.Any(c => c.Equal(cell));
