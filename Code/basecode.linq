@@ -194,6 +194,8 @@ public interface Order
 /// <summary>매장 타일을 나타냅니다. 세 API 문서에는 이 타입의 멤버가 정의되어 있지 않습니다.</summary>
 public interface Cell
 {
+    int GetX();
+    int GetY();
 }
 
 /// <summary>로봇 앞의 상품 진열대, 탁자, 선반 또는 냉장고를 나타냅니다. Robot.GetShelf()로 가져오며, 상품을 집거나 놓는 동작은 로봇의 Pick과 PutOnShelf로 수행합니다.</summary>
