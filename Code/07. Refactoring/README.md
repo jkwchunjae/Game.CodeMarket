@@ -7,6 +7,8 @@
 
 동영상 보러 가기: [YouTubeLink](https://youtu.be/icKbf24Dzpk?si=tjTNcrCV47Vbvsf3)
 ![로봇 2개 동작](image-1.png)
+![상점 업그레이드](image-3.png)
+![서비스 업그레이드](image-4.png)
 
 ## 개발 방향
 
