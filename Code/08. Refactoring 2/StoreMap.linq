@@ -69,8 +69,6 @@ class StoreMap : IStoreMap
         return cellProductList;
     }
     
-    private List<List<Node>> 
-    
     /// <summary>(x, y) 진열대에서 물건을 집을 수 있는 셀을 구한다.</summary>
     private CellProductPair GetPickupData(int x, int y, Product product)
     {
