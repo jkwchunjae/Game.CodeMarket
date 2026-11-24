@@ -76,20 +76,20 @@ class Graph : IGraph
         var lines = new List<string>();
 
         // 좌표 헤더
-        lines.Add("  " + string.Join(" ", Enumerable.Range(0, width)));
+        lines.Add("  " + string.Join(" ", Enumerable.Range(0, width).Select(x => x % 10)));
 
         // 위쪽 행부터 출력한다. 수평 화살표는 출발 노드와 도착 노드의
         // 연결 정보를 함께 확인해 양방향 연결도 표현한다.
         for (var y = height - 1; y >= 0; y--)
         {
             var row = new System.Text.StringBuilder();
-            row.Append(y).Append(' ');
+            row.Append(y % 10).Append(' ');
             for (var x = 0; x < width; x++)
             {
                 var node = nodes[x, y];
                 var connected = node.Up is not null || node.Down is not null ||
                     node.Left is not null || node.Right is not null;
-                row.Append(connected ? 'n' : '_');
+                row.Append(connected ? 'o' : '_');
 
                 if (x < width - 1)
                 {
@@ -225,7 +225,7 @@ class Graph : IGraph
             throw new InvalidOperationException("계산대를 찾을 수 없습니다. store.FindAll(Entity.Register).Count() == 0.");
         }
         var minX = Math.Min(shelfBoxes.Min(s => s.X), registerCells.Min(c => c.GetX()));
-        var maxX = Math.Max(shelfBoxes.Max(s => s.X), registerCells.Max(c => c.GetX()));
+        var maxX = Math.Max(shelfBoxes.Max(s => s.XEnd), registerCells.Max(c => c.GetX()));
         var y = registerCells[0].GetY() + 1;
         var height = 2;
         return new Rect(minX, y, maxX - minX + 1, height);

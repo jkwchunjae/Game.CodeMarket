@@ -30,10 +30,10 @@ class TestStoreMap : IStoreMap
     {
         return new MyCell[]
         {
-            new(1, 6), new(2, 6), new(5, 6), new(6, 6),
-            new(1, 5), new(2, 5), new(5, 5), new(6, 5),
-            new(1, 4), new(2, 4), new(5, 4), new(6, 4),
-            new(1, 3), new(2, 3), new(5, 3), new(6, 3),
+            new(1, 6), new(2, 6), new(5, 6), new(6, 6),  new(9, 6), new(10, 6),
+            new(1, 5), new(2, 5), new(5, 5), new(6, 5),  new(9, 5), new(10, 5),
+            new(1, 4), new(2, 4), new(5, 4), new(6, 4),  new(9, 4), new(10, 4),
+            new(1, 3), new(2, 3), new(5, 3), new(6, 3),  new(9, 3), new(10, 3),
         };
         throw new NotImplementedException();
     }
@@ -66,7 +66,7 @@ class TestStore : Store
             _ => [],
         };
     }
-    public int GetWidth() => 9;
+    public int GetWidth() => 12;
     public int GetHeight() => 11;
     public int GetGarageX() => 4;
     public int GetGarageY() => GetHeight() - 1;
