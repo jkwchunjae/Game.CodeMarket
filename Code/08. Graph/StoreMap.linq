@@ -24,6 +24,26 @@ record CellProductPair(MyCell ShelfPosition, MyCell Cell, Product Product, Direc
     public int Y => Cell.Y;
 }
 
+/// <summary>상점이 모여있는 단위. 보통 로봇 하나가 담당한다.</summary>
+class ShelfLine
+{
+    /// <summary>상단 입구 (좌측 상단)</summary>
+    public MyCell TopEnter { get; private set; }
+    /// <summary>하단 입구 (우측 하단)</summary>
+    public MyCell BottomEnter { get; private set; }
+    
+    public ShelfLine(CellProductPair[] pairs)
+    {
+        // top enter
+        var leftX = pairs.Min(p => p.Cell.X);
+        var topY = pairs.Max(p => p.Cell.Y);
+        TopEnter = new MyCell(leftX, topY);
+        // bottom enter
+        var rightX = pairs.Max(p => p.Cell.X);
+        var bottomY = pairs.Min(p => p.Cell.Y);
+        BottomEnter = new MyCell(rightX, bottomY);
+    }
+}
 
 interface IStoreMap
 {
@@ -142,6 +162,29 @@ class StoreMap : IStoreMap
             .Select(x => x.Cell)
             .ToArray();
     }
+    
+    #region ShelfLine
+    public ShelfLine[] SplitShelfLine()
+    {
+        List<List<CellProductPair>> items = new List<List<CellProductPair>>();
+        foreach (var data in _cellProductList)
+        {
+            var line = items.FirstOrDefault(line => Math.Abs(line[0].Cell.X - data.Cell.X) <= 1);
+            if (line == default)
+            {
+                items.Add(new List<CellProductPair> { data });
+            }
+            else
+            {
+                line.Add(data);
+            }
+        }
+        return items
+            .Select(line => new ShelfLine(line.ToArray()))
+            .OrderBy(line => line.TopEnter.X)
+            .ToArray();
+    }
+    #endregion
 }
 
 

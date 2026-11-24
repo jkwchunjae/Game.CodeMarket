@@ -48,11 +48,11 @@ interface IGraph
 
 class Graph : IGraph
 {
-    INode[,] nodes;
+    Node[,] nodes;
     
     public Graph(int width, int height)
     {
-        nodes = new INode[width, height];
+        nodes = new Node[width, height];
 
         for (var x = 0; x < width; x++)
         {
@@ -430,11 +430,6 @@ interface INode
     INode? Left { get; set; }
     INode? Right { get; set; }
     INode[] Next { get; }
-    
-    void CanGotoUp();
-    void CanGotoDown();
-    void CanGotoLeft();
-    void CanGotoRight();
 }
 
 class Node : INode
