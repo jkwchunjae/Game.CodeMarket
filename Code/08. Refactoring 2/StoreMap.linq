@@ -35,6 +35,8 @@ interface IStoreMap
     CellProductPair? GetCellProductPair(MyCell cell);
     ///
     CellProductPair? GetCellProductPairWithProduct(Product product);
+    /// <summary> 선반에 접근할 수 있는 셀 목록. 여기에서 넣고 뺄 수 있다. </summary>
+    MyCell[] GetFrontOfShelfCells();
 }
 class StoreMap : IStoreMap
 {
