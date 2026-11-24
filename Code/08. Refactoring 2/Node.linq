@@ -2,16 +2,8 @@
   <Namespace>System.Threading.Tasks</Namespace>
 </Query>
 
-//#load "../basecode"
-#load "./testcode"
+#load "../basecode"
 #load "./StoreMap"
-#load "./StaticData"
-
-void Main()
-{
-    var graph = Graph.Create(new TestStoreMap());
-    graph.ToGridString().DumpTell();
-}
 
 // 맵 구조
 // cell
