@@ -71,8 +71,12 @@ class DeliveryRobot : RobotBase
                     PickFromTruck();
                     PutToShelf();
                 }
-                robot.Move(Direction.Right);
-                robot.Move(Direction.Left);
+                while (robot.Move(Direction.Right))
+                {
+                }
+                while (robot.Move(Direction.Left))
+                {
+                }
             }
         }
     }
@@ -94,8 +98,9 @@ class DeliveryRobot : RobotBase
         {
             // 2. 첫번째 선반그룹 TopEnter에서 순회한다.
             Goto(shelfGroup.TopEnter);
-            shelfGroup.Traverse((CellProductPair cellData) =>
+            shelfGroup.TraverseForDelivery((CellProductPair cellData) =>
             {
+                Goto(cellData.Cell);
                 robot.Turn(cellData.Direction);
                 var shelf = robot.GetShelf();
                 var shelfCapacity = shelf.GetCapacity();
@@ -211,8 +216,9 @@ class DeliveryRobot : RobotBase
         foreach (var group in targetGroups)
         {
             Goto(group.TopEnter);
-            group.Traverse((CellProductPair pair) =>
+            group.TraverseForDelivery((CellProductPair pair) =>
             {
+                Goto(pair.Cell);
                 robot.Turn(pair.Direction);
 
                 while (robot.Has(pair.Product))

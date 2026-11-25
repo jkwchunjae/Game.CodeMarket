@@ -33,7 +33,7 @@ class ShelfGroup
     public MyCell TopEnter { get; private set; }
     /// <summary>하단 입구 (우측 하단)</summary>
     public MyCell BottomEnter { get; private set; }
-    /// <summary>이 로봇이 담당해야 할 상품. 이 상품만 트럭에서 꺼낸다.</summary>
+    /// <summary>이 선반 그룹에 있는 상품들 (이 그룹 담당 배송 로봇은 이 상품만 트럭에서 꺼내고, 서빙 로봇은 이 상품만 고객에게 제공한다.)</summary>
     public Product[] TargetProducts { get; private set; }
     
     public ShelfGroup(CellProductPair[] pairs)
@@ -58,23 +58,63 @@ class ShelfGroup
         return _pairs.Any(x => products.Contains(x.Product));
     }
     
-    public void Traverse(Action<CellProductPair> action)
+    private CellProductPair? FindPair(int x, int y)
     {
-        
+        return _pairs.FirstOrDefault(pair => pair.Cell.X == x && pair.Cell.Y == y);
+    }
+    
+    public void TraverseForDelivery(Action<CellProductPair> action)
+    {
+        for (var y = TopEnter.Y; y >= BottomEnter.Y; y--)
+        {
+            var x = TopEnter.X;
+            CellProductPair? pair = FindPair(x, y);
+            if (pair != null)
+            {
+                action(pair);
+            }
+        }
+        for (var y = BottomEnter.Y; y <= TopEnter.Y; y++)
+        {
+            var x = BottomEnter.X;
+            CellProductPair? pair = FindPair(x, y);
+            if (pair != null)
+            {
+                action(pair);
+            }
+        }
+    }
+
+    public void TraverseForServing(Action<CellProductPair> action)
+    {
+        for (var y = BottomEnter.Y; y <= TopEnter.Y; y++)
+        {
+            var x = BottomEnter.X;
+            CellProductPair? pair = FindPair(x, y);
+            if (pair != null)
+            {
+                action(pair);
+            }
+        }
+        for (var y = TopEnter.Y; y >= BottomEnter.Y; y--)
+        {
+            var x = TopEnter.X;
+            CellProductPair? pair = FindPair(x, y);
+            if (pair != null)
+            {
+                action(pair);
+            }
+        }
     }
 }
 
 interface IStoreMap
 {
+    /// <summary>트럭에서 물건을 받을 수 있는 위치 (로봇이 갈 수 있다)</summary>
     MyCell GarageCell { get; }
-    /// <summary> 배송 로봇의 전체 이동 경로. 실제로는 들고있는 제품에 따라서 달라질 수 있다. </summary>
-    MyCell[] GetShelfCells();
-    /// <summary> 선반 앞에 서있는지 확인한다.</summary>
-    bool IsFrontOfShelf(MyCell cell);
-    /// <summary>현재 위치에서 접근할 수 있는 선반 정보</summary>
-    CellProductPair? GetCellProductPair(MyCell cell);
-    ///
-    CellProductPair? GetCellProductPairWithProduct(Product product);
+    /// 계산대의 위치. (로봇이 갈 수 있는 캐셔의 위치가 아니다.)
+    MyCell[] Registers { get; }
+
     /// <summary> 선반에 접근할 수 있는 셀 목록. 여기에서 넣고 뺄 수 있다. Graph를 만들 때 사용한다. </summary>
     MyCell[] GetFrontOfShelfCells();
     /// <sumamry> 선반 그룹 목록을 반환한다. </summary>
@@ -89,6 +129,9 @@ class StoreMap : IStoreMap
     private readonly ShelfGroup[] _shelfs;
     
     public MyCell GarageCell => new MyCell(store.GetGarageX(), store.GetGarageY());
+    public MyCell[] Registers => store.FindAll(Entity.Register)
+        .Select(x => new MyCell(x.GetX(), x.GetY()))
+        .ToArray();
     
     public StoreMap(IStaticData staticData)
     {
@@ -151,40 +194,6 @@ class StoreMap : IStoreMap
         }
     }
     #endregion
-    
-    public MyCell[] GetShelfCells()
-    {
-        MyCell[] cells = new MyCell[]
-        {
-            new MyCell(2, 6),
-            new MyCell(2, 5),
-            new MyCell(2, 4),
-            new MyCell(2, 3),
-            new MyCell(3, 3),
-            new MyCell(3, 4),
-            new MyCell(3, 5),
-            new MyCell(3, 6),
-            new MyCell(3, 7),
-        };
-        return cells;
-    }
-
-    public bool IsFrontOfShelf(MyCell cell)
-    {
-        var cellData = GetCellProductPair(cell);
-        return cellData != null;
-    }
-
-    public CellProductPair? GetCellProductPair(MyCell cell)
-    {
-        return _cellProductList
-            .FirstOrDefault(x => x.Cell.Equal(cell));
-    }
-
-    public CellProductPair? GetCellProductPairWithProduct(Product product)
-    {
-        return _cellProductList.FirstOrDefault(x => x.Product == product);
-    }
 
     public MyCell[] GetFrontOfShelfCells()
     {
@@ -193,7 +202,7 @@ class StoreMap : IStoreMap
             .ToArray();
     }
     
-    #region ShelfLine
+    #region ShelfGroup
     private ShelfGroup[] SplitShelfGroup()
     {
         List<List<CellProductPair>> items = new List<List<CellProductPair>>();

@@ -37,16 +37,6 @@ class TestStoreMap : IStoreMap
         };
         throw new NotImplementedException();
     }
-
-    public MyCell[] GetShelfCells()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsFrontOfShelf(MyCell cell)
-    {
-        throw new NotImplementedException();
-    }
 }
 
 class C(int x, int y) : Cell

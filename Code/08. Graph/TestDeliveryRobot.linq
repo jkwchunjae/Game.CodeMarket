@@ -14,10 +14,15 @@ void Main()
     var staticData = new StaticData();
     var storeMap = new TestStoreMap();
     var pathManager = new PathManager(storeMap);
-    
+    var init = new DeliveryRobotInit()
+    {
+        StartIndex = 0,
+        MyShelfGroups = [0],
+    };
     
     store = new TestStore();
-    var deliveryRobot = new DeliveryRobot(staticData, storeMap, pathManager);
+    robot = new TestRobot();
+    var deliveryRobot = new DeliveryRobot(init, staticData, storeMap, pathManager);
     
     deliveryRobot.Run();
 }
@@ -43,16 +48,6 @@ class TestStoreMap : IStoreMap
             new(1, 4), new(2, 4), new(5, 4), new(6, 4),
             new(1, 3), new(2, 3), new(5, 3), new(6, 3),
         };
-        throw new NotImplementedException();
-    }
-
-    public MyCell[] GetShelfCells()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsFrontOfShelf(MyCell cell)
-    {
         throw new NotImplementedException();
     }
 }
