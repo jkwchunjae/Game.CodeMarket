@@ -9,10 +9,6 @@ interface IPathManager
 {
     /// <summary>시작점과 도착점을 포함하는 최단 경로. 도달할 수 없으면 빈 배열을 반환한다.</summary>
     MyCell[] GetPath(MyCell start, MyCell end);
-    /// <summary> 주로 배송 로봇이 목적지 목록을 입력하면 경로를 알려준다. </summary>
-    MyCell[] GetPathTraverse(MyCell start, MyCell[] targets);
-    
-    bool ContainsInCell(MyCell[] cells, MyCell cell);
 }
 
 class PathManager : IPathManager
@@ -23,10 +19,6 @@ class PathManager : IPathManager
     {
         _map = map;
         _graph = Graph.Create(map);
-    }
-    public bool ContainsInCell(MyCell[] cells, MyCell cell)
-    {
-        return cells.Any(c => c.Equal(cell));
     }
 
     public MyCell[] GetPath(MyCell start, MyCell end)
@@ -63,9 +55,5 @@ class PathManager : IPathManager
         }
 
         return Array.Empty<MyCell>();
-    }
-
-    public MyCell[] GetPathTraverse(MyCell start, MyCell[] targets)
-    {
     }
 }

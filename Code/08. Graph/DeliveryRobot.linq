@@ -23,13 +23,27 @@ class ShelfData
         Capacity = capacity;
     }
 }
+class DeliveryRobotInit
+{
+    public int StartIndex { get; set; }
+    public int[] MyShelfGroups { get; set; }
+}
 class DeliveryRobot : RobotBase
 {
     private List<ShelfData> _shelfs = new();
+    private readonly int _startIndex;
+    private readonly int[] _myShelfGroups;
+    private readonly Product[] _myProducts;
 
-    public DeliveryRobot(IStaticData staticData, IStoreMap map, IPathManager pathManager)
+    public DeliveryRobot(DeliveryRobotInit init, IStaticData staticData, IStoreMap map, IPathManager pathManager)
         : base(staticData, map, pathManager)
     {
+        _startIndex = init.StartIndex;
+        _myShelfGroups = init.MyShelfGroups;
+        _myProducts = _myShelfGroups
+            .Select(index => map.GetShelfGroup(index))
+            .SelectMany(group => group.TargetProducts)
+            .ToArray();
     }
     /// <summary>MainLoop</summary>
     public void Run()
@@ -67,55 +81,42 @@ class DeliveryRobot : RobotBase
     public void CollectShelfs()
     {
         _shelfs.Clear();
-        var cells = _map.GetShelfCells();
-        if (_path.ContainsInCell(cells, MyCell) == false)
+        // 1. 차고로 이동한다.
+        // 2. 첫번째 선반그룹 TopEnter에서 순회한다.
+        // 3. 순회 후 다음 선반그룹 TopEnter로 가서 순회한다.
+        // 4. 마지막 선반그룹 순회 후 다시 차고로 이동한다.
+
+        // 1. 차고로 이동한다.
+        GotoGarage();
+        
+        var shelfGroups = _map.GetAllShelfGroup(_startIndex);
+        foreach (var shelfGroup in shelfGroups)
         {
-            // 경로에서 완전히 벗어나있으면 일단 시작 위치로 이동한다.
-            Goto(cells[0]);
-        }
-        CellProductPair? prevCell = null;
-        ShelfData? prevShelfData = null;
-        foreach (var cell in cells)
-        {
-            // 일단 이동!
-            Goto(cell);
-            if (_map.IsFrontOfShelf(cell))
+            // 2. 첫번째 선반그룹 TopEnter에서 순회한다.
+            Goto(shelfGroup.TopEnter);
+            shelfGroup.Traverse((CellProductPair cellData) =>
             {
-                // 선반 앞에 도착했다.
-                var cellData = _map.GetCellProductPair(cell);
-                if (prevCell != null && prevShelfData != null && IsDuplicatedShelf(prevCell, cellData!))
-                {
-                    // 앞과 중복이면 넘어간다.
-                    prevCell = cellData;
-                    prevShelfData.Cells.Add(cell);
-                    continue;
-                }
-                // 선반을 바라본다.
-                robot.Turn(cellData!.Direction);
+                robot.Turn(cellData.Direction);
                 var shelf = robot.GetShelf();
                 var shelfCapacity = shelf.GetCapacity();
                 var entity = _static.GetEntityFromProduct(cellData.Product);
-                var shelfData = new ShelfData(cellData.ShelfPosition, cell, cellData.Product, shelf.GetCapacity());
+                var shelfData = new ShelfData(cellData.ShelfPosition, cellData.Cell, cellData.Product, shelf.GetCapacity());
                 _shelfs.Add(shelfData);
-                prevCell = cellData;
-                prevShelfData = shelfData;
-            }
+            });
+            // 3. 순회 후 다음 선반그룹 TopEnter로 가서 순회한다.
+            // 따로 뭘 할 필요는 없다. 다음 루프 Goto(shelfGroup.TopEnter);가 해준다.
         }
-    }
-    private bool IsDuplicatedShelf(CellProductPair cell1, CellProductPair cell2)
-    {
-        // 인접해 있고, 같은 entity면 중복이라고 하자.
-        return cell1.Product == cell2.Product &&
-            Math.Abs(cell1.Cell.X - cell2.Cell.X) + Math.Abs(cell1.Y - cell2.Y) == 1;
+        
+        GotoGarage();
     }
     
     /// <summary>차고 앞으로 간다.</summary>
     private void GotoGarage()
     {
-        var target = new MyCell(store.GetGarageX(), store.GetGarageY());
-        Goto(target);
+        Goto(_map.GarageCell);
         robot.Turn(store.GetGarageSide());
     }
+
     record ShelfOrder(Product Product, int Stock, int Capacity, double Random);
     /// <summary>배송 요청한다.</summary>
     private bool CallDelivery()
@@ -175,8 +176,14 @@ class DeliveryRobot : RobotBase
             }
             else
             {
-                robot.Move(Direction.Right);
-                robot.Move(Direction.Left);
+                while (robot.CanMove(Direction.Right))
+                {
+                    robot.Move(Direction.Right);
+                }
+                while (robot.CanMove(Direction.Left))
+                {
+                    robot.Move(Direction.Left);
+                }
             }
         }
         var allProducts = robot.GetDelivery();
@@ -193,30 +200,30 @@ class DeliveryRobot : RobotBase
     private void PutToShelf()
     {
         var carriedItems = robot.GetCarried();
-        var targetProducts = carriedItems.Distinct();
-        // 선반의 위치를 찾는다.
-        var targetShelfs = _shelfs
-            .Where(shelf => targetProducts.Contains(shelf.Product))
+        var targetProducts = carriedItems.Distinct().ToArray();
+        
+        // 내가 담당해야 할 선반그룹 중에서 방문해야 할 선반 그룹을 고른다.
+        var targetGroups = _myShelfGroups
+            .Select(index => _map.GetShelfGroup(index))
+            .Where(group => group.ContainsProducts(targetProducts))
             .ToArray();
-        var targetCells = targetShelfs.Select(x => x.Cells[0]).ToArray();
-        var paths = _path.GetPathTraverse(MyCell, targetCells);
-        foreach (var cell in paths)
+            
+        foreach (var group in targetGroups)
         {
-            Goto(cell);
-            if (targetCells.Contains(cell))
+            Goto(group.TopEnter);
+            group.Traverse((CellProductPair pair) =>
             {
-                var cellProductPair = _map.GetCellProductPair(cell);
-                var product = cellProductPair.Product;
-                robot.Turn(cellProductPair.Direction);
-                
-                while (robot.Has(product))
+                robot.Turn(pair.Direction);
+
+                while (robot.Has(pair.Product))
                 {
-                    // 선반이 꽉 차서 더 이상 못 넣는 경우 무한루프에 빠진다.
-                    // 그런데 이런 일은 잘 없을 것 같다.
-                    // 배송로봇이 2명이 될 때 생각해보자.
-                    robot.PutOnShelf(product);
+                    if (robot.PutOnShelf(pair.Product) == false)
+                    {
+                        // 로봇 손엔 있는데 선반에 꽉 찬 경우
+                        break;
+                    }
                 }
-            }
+            });
         }
     }
 }
