@@ -161,9 +161,6 @@ class ServingRobot : RobotBase
             
             // 물건을 담는다.
             PutInBag(order);
-            
-            // 나머지는 일단 버리자.
-            order.RemoveRemaining();
         }
     }
     
