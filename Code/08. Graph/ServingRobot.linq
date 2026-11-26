@@ -77,6 +77,11 @@ class ServingRobot : RobotBase
         var orderProducts = new Dictionary<Product, int>();
         GotoCasher(registerCell);
         var order = TakeOrder();
+        while (order == null)
+        {
+            // 주문받기 성공할 때 까지 계속 고객을 기다린다.
+            order = TakeOrder();
+        }
         if (order != null)
         {
             GotoFrontOfBag(registerCell);
@@ -114,19 +119,24 @@ class ServingRobot : RobotBase
 
                 if (totalOrderProducts.TryGetValue(pair.Product, out var remainCount))
                 {
+                    if (HasEnoughProducts(pair.Product, remainCount))
+                        continue;
+                    if (pair.ShelfIsEmpty())
+                        continue;
+
                     robot.Turn(pair.Direction);
                     while (true)
                     {
                         if (RobotIsFull())
                             break;
                         if (HasEnoughProducts(pair.Product, remainCount))
-                        {
                             break;
-                        }
-                        else
+                        if (pair.ShelfIsEmpty())
+                            break;
+                        if (robot.Pick(pair.Product) == false)
                         {
-                            if (robot.Pick(pair.Product) == false)
-                                break;
+                            Console.Error.WriteLine($"cell: {pair.Cell.ToStr()}, shelf: {pair.ShelfPosition.ToStr()}");
+                            break;
                         }
                     }
                 }

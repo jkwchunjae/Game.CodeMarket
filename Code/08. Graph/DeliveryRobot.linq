@@ -70,19 +70,20 @@ class DeliveryRobot : RobotBase
                 {
                     PickFromTruck();
                     PutToShelf();
-                }
-                while (robot.CanMove(Direction.Right))
-                {
-                    robot.Move(Direction.Right);
-                }
-                while (robot.CanMove(Direction.Left))
-                {
-                    robot.Move(Direction.Left);
+                    GotoGarage();
                 }
             }
         }
     }
 
+    /// <summary>차고 앞으로 간다.</summary>
+    private void GotoGarage()
+    {
+        Goto(_map.GarageCell);
+        robot.Turn(store.GetGarageSide());
+    }
+
+    #region CollectShelf: 선반 정보를 모은다.
     /// <summary>한 바퀴 돌면서 선반 객체를 가져온다.</summary>
     public void CollectShelfs()
     {
@@ -116,14 +117,9 @@ class DeliveryRobot : RobotBase
         
         GotoGarage();
     }
-    
-    /// <summary>차고 앞으로 간다.</summary>
-    private void GotoGarage()
-    {
-        Goto(_map.GarageCell);
-        robot.Turn(store.GetGarageSide());
-    }
+    #endregion
 
+    #region CallDelivery: 배송 요청
     record ShelfOrder(Product Product, int Stock, int Capacity, double Random);
     /// <summary>배송 요청한다.</summary>
     private bool CallDelivery()
@@ -153,11 +149,13 @@ class DeliveryRobot : RobotBase
             }
             for (var i = 0; i < deliveryCount; i++)
             {
-                if (robot.GetList().Count() < store.GetTruckCapacity())
-                {
-                    robot.GetList().Add(shelfOrder.Product);
-                }
+                AddProductIfPossible(shelfOrder.Product);
             }
+        }
+        if (store.GetSeason() == Season.Spring)
+        {
+            AddProductIfPossible(Product.Fertilizer);
+            AddProductIfPossible(Product.Fertilizer);
         }
         if (robot.GetList().Any())
         {
@@ -169,22 +167,39 @@ class DeliveryRobot : RobotBase
             return false;
         }
     }
+    void AddProductIfPossible(Product product)
+    {
+        if (robot.GetList().Count() < store.GetTruckCapacity())
+        {
+            robot.GetList().Add(product);
+        }
+    }
+    #endregion
+    
+    #region PickFromTruck: 트럭에서 물건을 내린다.
     /// <summary>트럭에서 물건을 내린다. 다 꺼냈으면 true 남았으면 false</summary>
     private bool PickFromTruck()
     {
+        #region waiting truck
         while (true)
         {
+            GotoGarage();
             if (store.IsTruckHere())
             {
-                GotoGarage();
                 if (robot.IsAtTruck())
                 {
                     break;
                 }
                 else
                 {
-                    robot.Move(Direction.Right);
-                    robot.Move(Direction.Left);
+                    while (robot.CanMove(Direction.Right))
+                    {
+                        robot.Move(Direction.Right);
+                    }
+                    while (robot.CanMove(Direction.Left))
+                    {
+                        robot.Move(Direction.Left);
+                    }
                 }
             }
             else
@@ -199,16 +214,24 @@ class DeliveryRobot : RobotBase
                 }
             }
         }
+        #endregion
+        
         var allProducts = robot.GetDelivery();
         foreach (var item in allProducts)
         {
-            if (robot.Pick(item) == false)
+            if (_myProducts.Contains(item))
             {
-                return false;
+                if (robot.Pick(item) == false)
+                {
+                    return false;
+                }
             }
         }
         return true;
     }
+    #endregion
+    
+    #region PutToShelf: 선반에 물건을 넣는다.
     /// <summary>선반에 물건을 넣는다.</summary>
     private void PutToShelf()
     {
@@ -227,6 +250,12 @@ class DeliveryRobot : RobotBase
             foreach (var pair in group.TraverseForDelivery())
             {
                 Goto(pair.Cell);
+                var currentShelfStock = store.GetStock(pair.ShelfPosition.X, pair.ShelfPosition.Y);
+                var currentShelfCapacity = _shelfs.First(x => x.ShelfPosition.X == pair.ShelfPosition.X && x.ShelfPosition.Y == pair.ShelfPosition.Y).Capacity;
+                var isFull = currentShelfStock >= currentShelfCapacity;
+                if (isFull)
+                    continue;
+                
                 robot.Turn(pair.Direction);
 
                 while (robot.Has(pair.Product))
@@ -237,7 +266,11 @@ class DeliveryRobot : RobotBase
                         break;
                     }
                 }
+                
+                // 중간중간 배송 요청을 한다. (실패해도 그만이고, 요청하면 좋은거고)
+                CallDelivery();
             }
         }
     }
+    #endregion
 }

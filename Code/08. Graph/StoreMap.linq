@@ -22,6 +22,11 @@ record CellProductPair(MyCell ShelfPosition, MyCell Cell, Product Product, Direc
 {
     public int X => Cell.X;
     public int Y => Cell.Y;
+
+    public bool ShelfIsEmpty()
+    {
+        return store.GetStock(ShelfPosition.X, ShelfPosition.Y) == 0;
+    }
 }
 
 /// <summary>상점이 모여있는 단위. 보통 로봇 하나가 담당한다.</summary>

@@ -52,6 +52,9 @@ class StaticData : IStaticData
             new EntityProductPair(Entity.EasterTable, Product.Eastercake),
             new EntityProductPair(Entity.WineStand, Product.Wine),
             new EntityProductPair(Entity.TruffleFridge, Product.Truffle),
+            new EntityProductPair(Entity.WatermelonTable, Product.Watermelon),
+            new EntityProductPair(Entity.TangerineTable, Product.Tangerine),
+            new EntityProductPair(Entity.JamTable, Product.Jam),
         ];
     }
     public bool IsProduct(Entity entity)

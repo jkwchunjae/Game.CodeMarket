@@ -387,8 +387,10 @@ class Graph : IGraph
             // 선반 내부는 양방향으로 연결한다.
             for (var y = shelfBox.Y; y <= shelfBox.YEnd; y++)
             {
-                graph.nodes[shelfBox.X, y].CanGotoRight();
-                graph.nodes[shelfBox.X + 1, y].CanGotoLeft();
+                if (y != shelfBox.YEnd)
+                    graph.nodes[shelfBox.X, y].CanGotoRight();
+                if (y != shelfBox.Y)
+                    graph.nodes[shelfBox.X + 1, y].CanGotoLeft();
             }
 
             // 왼쪽 아래에선 계산대 박스로 내려갈 수 있어야 하고,
