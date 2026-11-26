@@ -11,7 +11,7 @@ record MyCell(int X, int Y)
     {
         return X == cell.X && Y == cell.Y;
     }
-    
+
     public string ToStr()
     {
         return $"({X}, {Y})";
@@ -35,11 +35,11 @@ class ShelfGroup
     public MyCell BottomEnter { get; private set; }
     /// <summary>이 선반 그룹에 있는 상품들 (이 그룹 담당 배송 로봇은 이 상품만 트럭에서 꺼내고, 서빙 로봇은 이 상품만 고객에게 제공한다.)</summary>
     public Product[] TargetProducts { get; private set; }
-    
+
     public ShelfGroup(CellProductPair[] pairs)
     {
         _pairs = pairs;
-        
+
         // top enter
         var leftX = pairs.Min(p => p.Cell.X);
         var topY = pairs.Max(p => p.Cell.Y);
@@ -48,30 +48,31 @@ class ShelfGroup
         var rightX = pairs.Max(p => p.Cell.X);
         var bottomY = pairs.Min(p => p.Cell.Y);
         BottomEnter = new MyCell(rightX, bottomY);
-        
-        TargetProducts = pairs.Select(x => x.Product).Distinct().ToArray();
+
+        TargetProducts = pairs.Select(x => x.Product).Distinct().OfType<Product>().ToArray();
     }
-    
+
     /// <summary>products중 하나라도 이 그룹에 포함되어 있는지 체크</summary>
     public bool ContainsProducts(Product[] products)
     {
         return _pairs.Any(x => products.Contains(x.Product));
     }
-    
+
     private CellProductPair? FindPair(int x, int y)
     {
         return _pairs.FirstOrDefault(pair => pair.Cell.X == x && pair.Cell.Y == y);
     }
-    
-    public void TraverseForDelivery(Action<CellProductPair> action)
+
+    public CellProductPair[] TraverseForDelivery()
     {
+        var list = new List<CellProductPair>();
         for (var y = TopEnter.Y; y >= BottomEnter.Y; y--)
         {
             var x = TopEnter.X;
             CellProductPair? pair = FindPair(x, y);
             if (pair != null)
             {
-                action(pair);
+                list.Add(pair);
             }
         }
         for (var y = BottomEnter.Y; y <= TopEnter.Y; y++)
@@ -80,20 +81,22 @@ class ShelfGroup
             CellProductPair? pair = FindPair(x, y);
             if (pair != null)
             {
-                action(pair);
+                list.Add(pair);
             }
         }
+        return list.ToArray();
     }
 
-    public void TraverseForServing(Action<CellProductPair> action)
+    public CellProductPair[] TraverseForServing()
     {
+        var list = new List<CellProductPair>();
         for (var y = BottomEnter.Y; y <= TopEnter.Y; y++)
         {
             var x = BottomEnter.X;
             CellProductPair? pair = FindPair(x, y);
             if (pair != null)
             {
-                action(pair);
+                list.Add(pair);
             }
         }
         for (var y = TopEnter.Y; y >= BottomEnter.Y; y--)
@@ -102,9 +105,11 @@ class ShelfGroup
             CellProductPair? pair = FindPair(x, y);
             if (pair != null)
             {
-                action(pair);
+                list.Add(pair);
             }
         }
+        
+        return list.ToArray();
     }
 }
 
@@ -127,12 +132,12 @@ class StoreMap : IStoreMap
     private readonly IStaticData _static;
     private readonly List<CellProductPair> _cellProductList;
     private readonly ShelfGroup[] _shelfs;
-    
+
     public MyCell GarageCell => new MyCell(store.GetGarageX(), store.GetGarageY());
     public MyCell[] Registers => store.FindAll(Entity.Register)
         .Select(x => new MyCell(x.GetX(), x.GetY()))
         .ToArray();
-    
+
     public StoreMap(IStaticData staticData)
     {
         _static = staticData;
@@ -149,20 +154,17 @@ class StoreMap : IStoreMap
             for (var y = 0; y < store.GetHeight(); y++)
             {
                 var entity = store.GetEntity(x, y);
-                if (entity != null)
+                if (entity != null && staticData.IsProduct(entity.Value))
                 {
                     var product = staticData.GetProductFromEntity(entity.Value);
-                    if (product != null)
-                    {
-                        var pickupData = GetPickupData(x, y, product);
-                        cellProductList.Add(pickupData);
-                    }
+                    var pickupData = GetPickupData(x, y, product);
+                    cellProductList.Add(pickupData);
                 }
             }
         }
         return cellProductList;
     }
-    
+
     /// <summary>(x, y) 진열대에서 물건을 집을 수 있는 셀을 구한다.</summary>
     private CellProductPair GetPickupData(int x, int y, Product product)
     {
@@ -182,7 +184,7 @@ class StoreMap : IStoreMap
     {
         var isInStore = x >= 0 && x < store.GetWidth()
             && y >= 0 && y < store.GetHeight();
-            
+
         if (isInStore)
         {
             var directions = store.GetPickupDirections(x, y, product);
@@ -201,7 +203,7 @@ class StoreMap : IStoreMap
             .Select(x => x.Cell)
             .ToArray();
     }
-    
+
     #region ShelfGroup
     private ShelfGroup[] SplitShelfGroup()
     {
@@ -209,7 +211,7 @@ class StoreMap : IStoreMap
         foreach (var data in _cellProductList)
         {
             var line = items.FirstOrDefault(line => Math.Abs(line[0].Cell.X - data.Cell.X) <= 1);
-            if (line == default)
+            if (line == default(List<CellProductPair>))
             {
                 items.Add(new List<CellProductPair> { data });
             }

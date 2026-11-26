@@ -12,7 +12,12 @@ var staticData = new StaticData();
 var storeMap = new StoreMap(staticData);
 var pathManager = new PathManager(storeMap);
 
-var servingRobot = new ServingRobot(staticData, storeMap, pathManager);
+var init = new ServingRobotInit
+{
+    MyShelfGroups = [0],
+};
+
+var servingRobot = new ServingRobot(init, staticData, storeMap, pathManager);
 
 servingRobot.Run();
 

@@ -71,11 +71,13 @@ class DeliveryRobot : RobotBase
                     PickFromTruck();
                     PutToShelf();
                 }
-                while (robot.Move(Direction.Right))
+                while (robot.CanMove(Direction.Right))
                 {
+                    robot.Move(Direction.Right);
                 }
-                while (robot.Move(Direction.Left))
+                while (robot.CanMove(Direction.Left))
                 {
+                    robot.Move(Direction.Left);
                 }
             }
         }
@@ -98,16 +100,16 @@ class DeliveryRobot : RobotBase
         {
             // 2. 첫번째 선반그룹 TopEnter에서 순회한다.
             Goto(shelfGroup.TopEnter);
-            shelfGroup.TraverseForDelivery((CellProductPair cellData) =>
+            foreach (var pair in shelfGroup.TraverseForDelivery())
             {
-                Goto(cellData.Cell);
-                robot.Turn(cellData.Direction);
+                Goto(pair.Cell);
+                robot.Turn(pair.Direction);
                 var shelf = robot.GetShelf();
                 var shelfCapacity = shelf.GetCapacity();
-                var entity = _static.GetEntityFromProduct(cellData.Product);
-                var shelfData = new ShelfData(cellData.ShelfPosition, cellData.Cell, cellData.Product, shelf.GetCapacity());
+                var entity = _static.GetEntityFromProduct(pair.Product);
+                var shelfData = new ShelfData(pair.ShelfPosition, pair.Cell, pair.Product, shelf.GetCapacity());
                 _shelfs.Add(shelfData);
-            });
+            }
             // 3. 순회 후 다음 선반그룹 TopEnter로 가서 순회한다.
             // 따로 뭘 할 필요는 없다. 다음 루프 Goto(shelfGroup.TopEnter);가 해준다.
         }
@@ -143,6 +145,12 @@ class DeliveryRobot : RobotBase
         {
             // 한 상품당 최대 3개만 신청하자. (한 상품이 너무 독점하지 않도록 방지)
             var deliveryCount = Math.Min(3, shelfOrder.Capacity - shelfOrder.Stock);
+            if (robot.Has(shelfOrder.Product))
+            {
+                // 내가 들고있는건 주문할 필요 없다.
+                var myCount = robot.GetCarried().Count(x => x == shelfOrder.Product);
+                deliveryCount = Math.Max(0, deliveryCount - myCount);
+            }
             for (var i = 0; i < deliveryCount; i++)
             {
                 if (robot.GetList().Count() < store.GetTruckCapacity())
@@ -216,7 +224,7 @@ class DeliveryRobot : RobotBase
         foreach (var group in targetGroups)
         {
             Goto(group.TopEnter);
-            group.TraverseForDelivery((CellProductPair pair) =>
+            foreach (var pair in group.TraverseForDelivery())
             {
                 Goto(pair.Cell);
                 robot.Turn(pair.Direction);
@@ -229,7 +237,7 @@ class DeliveryRobot : RobotBase
                         break;
                     }
                 }
-            });
+            }
         }
     }
 }

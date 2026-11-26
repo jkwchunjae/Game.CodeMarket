@@ -410,6 +410,7 @@ public interface Product
     /// <summary>코냑. 성인 전용 주류이며 최고급 상품입니다.</summary>
     static Product Cognac;
 }
+
 public enum Direction
 {
     Up,

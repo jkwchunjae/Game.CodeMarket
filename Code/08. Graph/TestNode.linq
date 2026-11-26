@@ -16,6 +16,15 @@ void Main()
 
 class TestStoreMap : IStoreMap
 {
+    public MyCell GarageCell => throw new NotImplementedException();
+
+    public MyCell[] Registers => throw new NotImplementedException();
+
+    public ShelfGroup[] GetAllShelfGroup(int startIndex)
+    {
+        throw new NotImplementedException();
+    }
+
     public CellProductPair? GetCellProductPair(MyCell cell)
     {
         throw new NotImplementedException();
@@ -35,6 +44,11 @@ class TestStoreMap : IStoreMap
             new(1, 4), new(2, 4), new(5, 4), new(6, 4),  new(9, 4), new(10, 4),
             new(1, 3), new(2, 3), new(5, 3), new(6, 3),  new(9, 3), new(10, 3),
         };
+        throw new NotImplementedException();
+    }
+
+    public ShelfGroup GetShelfGroup(int index)
+    {
         throw new NotImplementedException();
     }
 }
@@ -86,3 +100,9 @@ class TestStore : Store
     public bool SendTruckAway() => throw new NotImplementedException();
 }
 
+void TestNode()
+{
+    var storeMap = new StoreMap(new StaticData());
+    var graph = Graph.Create(storeMap);
+    Console.Error.WriteLine(graph.ToGridString());
+}

@@ -18,8 +18,8 @@ class ServingRobot : RobotBase
     private readonly int[] _myShelfGroups;
     private readonly HashSet<Product> _myProducts;
 
-    /// 주문 중에서 내가 선반에 가서 담아야 하는 상품 수
-    private readonly Dictionary<Product, int> _remainProducts = new Dictionary<Product, int>();
+    // 주문 중에서 내가 선반에 가서 담아야 하는 상품 수
+    //private readonly Dictionary<Product, int> _remainProducts = new Dictionary<Product, int>();
     
     public ServingRobot(ServingRobotInit init, IStaticData staticData, IStoreMap map, IPathManager pathManager)
         : base(staticData, map, pathManager)
@@ -39,17 +39,14 @@ class ServingRobot : RobotBase
         while (true)
         {
             // 계산대를 모두 돈다.
-            foreach (var register in _map.Registers)
-            {
-                MoveAndTakeOrder(register);
-            }
+            var totalOrderProducts = TakeAllOrders();
 
-            if (_remainProducts.Any())
+            if (totalOrderProducts.Any())
             {
                 // 선반에 가서 다 담는다. (역순으로 간다)
                 foreach (var groupIndex in _myShelfGroups.Reverse())
                 {
-                    PickFromShelf(groupIndex);
+                    PickFromShelf(groupIndex, totalOrderProducts);
                 }
 
                 // 3. 가방에 담아서 보낸다.
@@ -62,12 +59,28 @@ class ServingRobot : RobotBase
     }
     
     #region 계산대에서 주문을 받는다.
-    void MoveAndTakeOrder(MyCell registerCell)
+    Dictionary<Product, int> TakeAllOrders()
     {
+        var totalOrderProducts = new Dictionary<Product, int>();
+        foreach (var register in _map.Registers)
+        {
+            var currentOrderProducts = MoveAndTakeOrder(register);
+            foreach (var (product, count) in currentOrderProducts)
+            {
+                totalOrderProducts[product] = totalOrderProducts.TryGetValue(product, out var totalCount) ? totalCount + count : count;
+            }
+        }
+        return totalOrderProducts;
+    }
+    Dictionary<Product, int> MoveAndTakeOrder(MyCell registerCell)
+    {
+        var orderProducts = new Dictionary<Product, int>();
         GotoCasher(registerCell);
         var order = TakeOrder();
         if (order != null)
         {
+            GotoFrontOfBag(registerCell);
+            PutInBag(order);
             foreach (var item in order.GetProducts())
             {
                 if (_myProducts.Contains(item))
@@ -75,49 +88,61 @@ class ServingRobot : RobotBase
                     var remainCount = order.GetRemaining(item);
                     if (remainCount > 0)
                     {
-                        _remainProducts[item] = remainCount + (_remainProducts.TryGetValue(item, out var count) ? count : 0);
+                        orderProducts[item] = remainCount + (orderProducts.TryGetValue(item, out var count) ? count : 0);
                     }
                 }
             }
-            GotoFrontOfBag(registerCell);
-            PutInBag(order);
         }
+        return orderProducts;
     }
     #endregion
     
     #region 선반에 가서 담는다. PickFromShelf
-    void PickFromShelf(int shelfGroupIndex)
+    void PickFromShelf(int shelfGroupIndex, Dictionary<Product, int> totalOrderProducts)
     {
         var shelfGroup = _map.GetShelfGroup(shelfGroupIndex);
         // 이 그룹에서 꺼낼 물건이 있을 때만 들어간다.
-        Product[] orderProducts = _remainProducts.Keys.ToArray();
+        Product[] orderProducts = totalOrderProducts.Keys.ToArray();
         if (shelfGroup.ContainsProducts(orderProducts))
         {
             Goto(shelfGroup.BottomEnter);
-            shelfGroup.TraverseForServing((CellProductPair pair) =>
+            foreach (var pair in shelfGroup.TraverseForServing())
             {
                 Goto(pair.Cell);
                 if (RobotIsFull())
                     return;
 
-                if (_remainProducts.TryGetValue(pair.Product, out var remainCount))
+                if (totalOrderProducts.TryGetValue(pair.Product, out var remainCount))
                 {
                     robot.Turn(pair.Direction);
-                    for (var i = 0; i < remainCount; i++)
+                    while (true)
                     {
                         if (RobotIsFull())
                             break;
-                        if (robot.Pick(pair.Product) == false)
+                        if (HasEnoughProducts(pair.Product, remainCount))
+                        {
                             break;
+                        }
+                        else
+                        {
+                            if (robot.Pick(pair.Product) == false)
+                                break;
+                        }
                     }
                 }
-            });
+            }
         }
+    }
+    
+    /// <summary>로봇이 count만큼 들고 있는가?</summary>
+    bool HasEnoughProducts(Product product, int count)
+    {
+        return robot.GetCarried().Count(x => x == product) >= count;
     }
 
     bool RobotIsFull()
     {
-        return robot.GetCapacity() >= robot.GetCarried().Count();
+        return robot.GetCarried().Count() >= robot.GetCapacity();
     }
     #endregion
 
@@ -136,23 +161,24 @@ class ServingRobot : RobotBase
             
             // 물건을 담는다.
             PutInBag(order);
+            
+            // 나머지는 일단 버리자.
+            order.RemoveRemaining();
         }
     }
     
-    void PutInBag(Order order)
+    Dictionary<Product, int> PutInBag(Order order)
     {
+        var putItems = new Dictionary<Product, int>();
         foreach (var item in order.GetProducts())
         {
             while (order.GetRemaining(item) > 0 && robot.Has(item))
             {
                 robot.PutInBag(item);
-                _remainProducts[item] = _remainProducts[item] - 1;
-                if (_remainProducts[item] == 0)
-                {
-                    _remainProducts.Remove(item);
-                }
+                putItems[item] = putItems.TryGetValue(item, out var count) ? count + 1 : 1;
             }
         }
+        return putItems;
     }
     #endregion
 

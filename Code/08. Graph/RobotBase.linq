@@ -31,19 +31,47 @@ abstract class RobotBase
         }
         else if (robot.GetX() + 1 == target.X && robot.GetY() == target.Y)
         {
-            return robot.Move(Direction.Right);
+            while (true)
+            {
+                if (robot.CanMove(Direction.Right))
+                {
+                    robot.Move(Direction.Right);
+                    return true;
+                }
+            }
         }
         else if (robot.GetX() - 1 == target.X && robot.GetY() == target.Y)
         {
-            return robot.Move(Direction.Left);
+            while (true)
+            {
+                if (robot.CanMove(Direction.Left))
+                {
+                    robot.Move(Direction.Left);
+                    return true;
+                }
+            }
         }
         else if (robot.GetX() == target.X && robot.GetY() + 1 == target.Y)
         {
-            return robot.Move(Direction.Up);
+            while (true)
+            {
+                if (robot.CanMove(Direction.Up))
+                {
+                    robot.Move(Direction.Up);
+                    return true;
+                }
+            }
         }
         else if (robot.GetX() == target.X && robot.GetY() - 1 == target.Y)
         {
-            return robot.Move(Direction.Down);
+            while (true)
+            {
+                if (robot.CanMove(Direction.Down))
+                {
+                    robot.Move(Direction.Down);
+                    return true;
+                }
+            }
         }
         else
         {

@@ -12,7 +12,13 @@ var staticData = new StaticData();
 var storeMap = new StoreMap(staticData);
 var pathManager = new PathManager(storeMap);
 
-var deliveryRobot = new DeliveryRobot(staticData, storeMap, pathManager);
+var init = new DeliveryRobotInit
+{
+    StartIndex = 0,
+    MyShelfGroups = [0],
+};
+
+var deliveryRobot = new DeliveryRobot(init, staticData, storeMap, pathManager);
 
 deliveryRobot.Run();
 

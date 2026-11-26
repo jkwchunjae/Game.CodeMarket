@@ -89,7 +89,7 @@ class Graph : IGraph
                 var node = nodes[x, y];
                 var connected = node.Up is not null || node.Down is not null ||
                     node.Left is not null || node.Right is not null;
-                row.Append(connected ? 'o' : '_');
+                row.Append(connected ? node.CellType : "_");
 
                 if (x < width - 1)
                 {
@@ -116,7 +116,7 @@ class Graph : IGraph
             lines.Add(vertical.ToString());
         }
 
-        return string.Join(Environment.NewLine, lines);
+        return string.Join("\n", lines);
     }
     #endregion
 
@@ -142,15 +142,15 @@ class Graph : IGraph
         // 계산대 위쪽만 고려했을 때 진열대가 있는 범위의 높이.
         // 계산대 아래쪽에 자판기가 있을 수 있다.
         // 그것은 당장 고려하지 않는다.
-        Rect[] shelfBoxes = CalcShelfBoxes(map);
+        Rect[] shelfBoxes = CalcShelfBoxes(graph, map);
 
         // 계산대를 기준으로 생각해야함.
         // 계산대가 여러개 있을 수 있음. 가로로 죽 늘어선 형태 계산대 간격이 벌어져 있을 수 있음.
-        Rect registerBox = CalcRegisterBox(shelfBoxes);
+        Rect registerBox = CalcRegisterBox(graph, shelfBoxes);
 
         // 차고앞, 배달로봇 동선 박스. 각각 구한다.
         Rect garageBox = CalcGarageBox();
-        Rect deliveryBox = CalcDeliveryBox(garageBox, shelfBoxes);
+        Rect deliveryBox = CalcDeliveryBox(graph, garageBox, shelfBoxes);
         
         MakeRegisterBoxConnection(graph, registerBox);
         MakeShelfBoxesConnection(graph, shelfBoxes);
@@ -162,7 +162,7 @@ class Graph : IGraph
     #region Calc Box
     #region Shelf Box
     /// shelf box는 가로2, 세로N 짜리 박스의 묶음이다.
-    static Rect[] CalcShelfBoxes(IStoreMap map)
+    static Rect[] CalcShelfBoxes(Graph graph, IStoreMap map)
     {
         List<Rect> boxes = new List<Rect>();
         
@@ -178,6 +178,19 @@ class Graph : IGraph
                 boxes[boxes.IndexOf(box)] = UpdateShelfBox(box, shelfCell.X, shelfCell.Y);
             }
         }
+        
+        foreach (var box in boxes)
+        {
+            for (var x = box.X; x <= box.XEnd; x++)
+                for (var y = box.Y; y <= box.YEnd; y++)
+                    graph.nodes[x, y].CellType = "s";
+        }
+
+        var maxHeight = boxes.Max(box => box.Height);
+
+        boxes = boxes
+            .Select(box => new Rect(box.X, box.Y, box.Width, maxHeight))
+            .ToList();
         
         return boxes.ToArray();
     }
@@ -213,7 +226,7 @@ class Graph : IGraph
     #endregion
     
     #region Register Box
-    static Rect CalcRegisterBox(Rect[] shelfBoxes)
+    static Rect CalcRegisterBox(Graph graph, Rect[] shelfBoxes)
     {
         // 계산대는 모두 같은 행에 있다. (y값이 같다.)
         List<Cell> registerCells = store.FindAll(Entity.Register)
@@ -228,7 +241,12 @@ class Graph : IGraph
         var maxX = Math.Max(shelfBoxes.Max(s => s.XEnd), registerCells.Max(c => c.GetX()));
         var y = registerCells[0].GetY() + 1;
         var height = 2;
-        return new Rect(minX, y, maxX - minX + 1, height);
+        var box = new Rect(minX, y, maxX - minX + 1, height);
+
+        for (var x = box.X; x <= box.XEnd; x++)
+            for (var yy = box.Y; yy <= box.YEnd; yy++)
+                graph.nodes[x, yy].CellType = "r";
+        return box;
     }
     #endregion
     
@@ -260,14 +278,18 @@ class Graph : IGraph
     /// 배달 로봇이 움직일 공간
     /// 아래로는 선반 박스와 닿아야 하고, 위로는 차고 박스랑 닿아야한다.
     /// </summary>
-    static Rect CalcDeliveryBox(Rect garageBox, Rect[] shelfBoxes)
+    static Rect CalcDeliveryBox(Graph graph, Rect garageBox, Rect[] shelfBoxes)
     {
         var minX = Math.Min(garageBox.X, shelfBoxes.Min(s => s.X));
         var maxX = Math.Max(garageBox.X, shelfBoxes.Max(s => s.XEnd));
         var minY = shelfBoxes.Max(s => s.YEnd) + 1;
         var maxY = garageBox.Y - 1;
 
-        return new Rect(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        var box  = new Rect(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        for (var x = box.X; x <= box.XEnd; x++)
+            for (var yy = box.Y; yy <= box.YEnd; yy++)
+                graph.nodes[x, yy].CellType = "d";
+        return box;
     }
     #endregion
     #endregion
@@ -423,12 +445,13 @@ interface INode
 {
     int X { get; }
     int Y { get; }
+    string CellType { get; }
 
     /// 위로 올라갈 수 있는가? 객체가 있으면 갈 수 있다는 뜻.
-    INode? Up { get; set; }
-    INode? Down { get; set; }
-    INode? Left { get; set; }
-    INode? Right { get; set; }
+    INode? Up { get; }
+    INode? Down { get; }
+    INode? Left { get; }
+    INode? Right { get; }
     INode[] Next { get; }
 }
 
@@ -436,14 +459,14 @@ class Node : INode
 {
     public int X { get; init; }
     public int Y { get; init; }
+    public string CellType { get; set; } = "o";
 
     public INode? Up { get; set; }
     public INode? Down { get; set; }
     public INode? Left { get; set; }
     public INode? Right { get; set; }
     
-    private readonly Lazy<INode[]> _next;
-    public INode[] Next => _next.Value;
+    public INode[] Next { get; private set; }
 
     private readonly IGraph _graph;
 
@@ -451,25 +474,27 @@ class Node : INode
     {
         _graph = graph;
         (X, Y) = (x, y);
-        _next = new Lazy<INode[]>(() => new [] { Up, Down, Left, Right }
-            .OfType<INode>()
-            .ToArray());
+        Next = [];
     }
     
     public void CanGotoUp()
     {
         Up = _graph.GetNode(X, Y + 1);
+        Next = [..Next, Up];
     }
     public void CanGotoDown()
     {
         Down = _graph.GetNode(X, Y - 1);
+        Next = [..Next, Down];
     }
     public void CanGotoLeft()
     {
         Left = _graph.GetNode(X - 1, Y);
+        Next = [..Next, Left];
     }
     public void CanGotoRight()
     {
         Right = _graph.GetNode(X + 1, Y);
+        Next = [..Next, Right];
     }
 }

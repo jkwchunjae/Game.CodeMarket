@@ -12,8 +12,10 @@ interface IStaticData
     Product[] AvailableProducts();
     /// <summary> 진열대와 상품의 짝을 구한다. </summary>
     EntityProductPair[] GetEntityProductPair();
+    /// <summary> 상품을 넣을 수 있는 진열대인가?</summary>
+    bool IsProduct(Entity entity);
     /// <summary> 진열대에 진열할 수 있는 상품을 구한다.</summary>
-    Product? GetProductFromEntity(Entity entity);
+    Product GetProductFromEntity(Entity entity);
     /// <summary> 상품을 진열할 수 있는 진열대를 구한다.</summary>
     Entity GetEntityFromProduct(Product product);
 }
@@ -47,18 +49,18 @@ class StaticData : IStaticData
             new EntityProductPair(Entity.BeerFridge, Product.Beer),
             new EntityProductPair(Entity.FertilizerTable, Product.Fertilizer),
             new EntityProductPair(Entity.CigaretteStand, Product.Cigarettes),
+            new EntityProductPair(Entity.EasterTable, Product.Eastercake),
+            new EntityProductPair(Entity.WineStand, Product.Wine),
+            new EntityProductPair(Entity.TruffleFridge, Product.Truffle),
         ];
     }
-    public Product? GetProductFromEntity(Entity entity)
+    public bool IsProduct(Entity entity)
     {
-        if (_entityProductPairDic.TryGetValue(entity, out var product))
-        {
-            return product;
-        }
-        else
-        {
-            return null;
-        }
+        return _entityProductPairDic.ContainsKey(entity);
+    }
+    public Product GetProductFromEntity(Entity entity)
+    {
+        return _entityProductPairDic[entity];
     }
     public Entity GetEntityFromProduct(Product product)
     {
