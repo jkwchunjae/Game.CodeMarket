@@ -64,7 +64,7 @@ class ShelfGroup
         return _pairs.Any(x => products.Contains(x.Product));
     }
 
-    private CellProductPair? FindPair(int x, int y)
+    public CellProductPair? FindPair(int x, int y)
     {
         return _pairs.FirstOrDefault(pair => pair.Cell.X == x && pair.Cell.Y == y);
     }
@@ -172,7 +172,7 @@ class ShelfGroup
 interface IStoreMap
 {
     /// <summary>트럭에서 물건을 받을 수 있는 위치 (로봇이 갈 수 있다)</summary>
-    MyCell GarageCell { get; }
+    //MyCell GarageCell { get; }
     /// 계산대의 위치. (로봇이 갈 수 있는 캐셔의 위치가 아니다.)
     MyCell[] Registers { get; }
 
@@ -233,6 +233,7 @@ class StoreMap : IStoreMap
         {
             return new(new MyCell(x, y), new MyCell(x + 1, y), product, Direction.Left);
         }
+        Console.Error.WriteLine($"{x}, {x}, {product}");
         return null;
     }
     /// <summary>(x, y)에서 물건을 집을 수 있는지 확인한다.</summary>

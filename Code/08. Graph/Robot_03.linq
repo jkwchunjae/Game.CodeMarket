@@ -14,7 +14,7 @@ var pathManager = new PathManager(storeMap);
 
 var init = new ServingRobotInit
 {
-    MyShelfGroups = [2],
+    MyShelfGroups = [2, 3],
 };
 
 var servingRobot = new ServingRobot(init, staticData, storeMap, pathManager);

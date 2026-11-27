@@ -39,12 +39,12 @@ class TestStoreMap : IStoreMap
     {
         return new MyCell[]
         {
-            new(2, 13), new(3, 13), new(6, 13), new(7, 13), //  new(9, 6), new(10, 6),
-            new(2, 12), new(3, 12), new(6, 12), new(7, 12), //  new(9, 6), new(10, 6),
-            new(2, 11), new(3, 11), new(6, 11), new(7, 11), //  new(9, 6), new(10, 6),
-            new(2, 10), new(3, 10), new(6, 10), new(7, 10), //  new(9, 5), new(10, 5),
-            new(2, 9), new(3, 9), new(6, 9), new(7, 9), //  new(9, 4), new(10, 4),
-            new(2, 8), new(3, 8), new(6, 8), new(7, 8), //  new(9, 3), new(10, 3),
+            new(2, 13), new(3, 13), new(6, 13), new(7, 13), new(10, 13), new(11, 13),
+            new(2, 12), new(3, 12), new(6, 12), new(7, 12), new(10, 12), new(11, 12),
+            new(2, 11), new(3, 11), new(6, 11), new(7, 11), new(10, 11), new(11, 11),
+            new(2, 10), new(3, 10), new(6, 10), new(7, 10), new(10, 10), new(11, 10),
+            new(2, 9), new(3, 9), new(6, 9), new(7, 9), new(10, 9), new(11, 9),
+            new(2, 8), new(3, 8), new(6, 8), new(7, 8), new(10, 8), new(11, 8),
         };
         throw new NotImplementedException();
     }
@@ -68,8 +68,8 @@ class TestStore : Store
         var y = 3;
         return entity switch
         {
-            Entity.Register => [new C(2, y), new C(5, y), new C(8, y)],
-            Entity.Bag => [new C(3, y), new C(6, y), new C(9, y)],
+            Entity.Register => [new C(2, y), new C(4, y), new C(6, y), new C(8, y), new C(10, y)],
+            Entity.Bag => [new C(3, y), new C(5, y), new C(7, y), new C(9, y), new C(11, y)],
             _ => [],
         };
     }

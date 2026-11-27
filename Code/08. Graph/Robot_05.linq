@@ -15,7 +15,7 @@ var pathManager = new PathManager(storeMap);
 var init = new DeliveryRobotInit
 {
     StartIndex = 2,
-    MyShelfGroups = [2],
+    MyShelfGroups = [2, 3],
     GarageX = 9,
 };
 

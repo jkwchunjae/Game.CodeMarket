@@ -239,8 +239,10 @@ class Graph : IGraph
         }
         var minX = Math.Min(shelfBoxes.Min(s => s.X), registerCells.Min(c => c.GetX()));
         var maxX = Math.Max(shelfBoxes.Max(s => s.XEnd), registerCells.Max(c => c.GetX()));
-        var y = registerCells[0].GetY() + 1;
-        var height = 2;
+        var shelfMinY = shelfBoxes.Min(x => x.Y);
+        var registerY = registerCells[0].GetY();
+        var y = registerY + 1;
+        var height = shelfMinY - registerY - 1;
         var box = new Rect(minX, y, maxX - minX + 1, height);
 
         for (var x = box.X; x <= box.XEnd; x++)

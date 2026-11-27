@@ -109,6 +109,8 @@ class ServingRobot : RobotBase
         
         foreach (var shelfGroupIndex in _myShelfGroups)
         {
+            if (shelfGroupIndex == 3)
+                continue; // 여기는 명품관.
             var shelfGroup = _map.GetShelfGroup(shelfGroupIndex);
             for (var i = 0; i < 2; i++)
             {
@@ -162,15 +164,11 @@ class ServingRobot : RobotBase
         {
             Goto(shelfGroup.BottomEnter);
             var traverse = shelfGroup.TraverseForServing(totalOrderProducts);
-            var reversedTraverse = traverse.Reverse().ToList();
             foreach (var pair in traverse)
             {
                 Goto(pair.Cell);
                 if (RobotIsFull())
                     return;
-
-                // 나머지 선반에서 꺼낼게 없으면 early return.
-                reversedTraverse.Remove(pair);
 
                 if (totalOrderProducts.TryGetValue(pair.Product, out var remainCount))
                 {

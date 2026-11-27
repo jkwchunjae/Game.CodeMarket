@@ -42,6 +42,7 @@ abstract class RobotBase
         }
         else if (robot.GetX() - 1 == target.X && robot.GetY() == target.Y)
         {
+            int tryCount = 0;
             while (true)
             {
                 if (robot.CanMove(Direction.Left))
@@ -49,16 +50,45 @@ abstract class RobotBase
                     robot.Move(Direction.Left);
                     return true;
                 }
+                else
+                {
+                    tryCount++;
+                    if (tryCount >= 5)
+                    {
+                        // 시도하다가 안되면 일단 위로 올라가보자.
+                        robot.Move(Direction.Up);
+                    }
+                    if (tryCount >= 10)
+                    {
+                        // 시도하다가 안되면 일단 위로 올라가보자.
+                        robot.Move(Direction.Down);
+                    }
+                }
             }
         }
         else if (robot.GetX() == target.X && robot.GetY() + 1 == target.Y)
         {
+            int tryCount = 0;
             while (true)
             {
                 if (robot.CanMove(Direction.Up))
                 {
                     robot.Move(Direction.Up);
                     return true;
+                }
+                else if (robot.GetY() >= store.GetHeight() - 3) // 배달로봇의 충돌을 방지 (그냥 경로 하드코딩을 해야 하나..)
+                {
+                    tryCount++;
+                    if (tryCount >= 5)
+                    {
+                        // 시도하다가 안되면 일단 오른쪽으로 가보자.
+                        robot.Move(Direction.Right);
+                    }
+                    if (tryCount >= 10)
+                    {
+                        // 시도하다가 안되면 일단 왼쪽으로 가보자.
+                        robot.Move(Direction.Left);
+                    }
                 }
             }
         }
