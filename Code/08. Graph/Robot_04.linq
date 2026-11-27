@@ -14,11 +14,11 @@ var pathManager = new PathManager(storeMap);
 
 var init = new DeliveryRobotInit
 {
-    StartIndex = 1,
-    MyShelfGroups = [1],
+    StartIndex = 0,
+    MyShelfGroups = [0, 1],
+    GarageX = 8,
 };
 
 var deliveryRobot = new DeliveryRobot(init, staticData, storeMap, pathManager);
 
 deliveryRobot.Run();
-

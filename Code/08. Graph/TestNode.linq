@@ -39,12 +39,12 @@ class TestStoreMap : IStoreMap
     {
         return new MyCell[]
         {
+            new(2, 13), new(3, 13), new(6, 13), new(7, 13), //  new(9, 6), new(10, 6),
+            new(2, 12), new(3, 12), new(6, 12), new(7, 12), //  new(9, 6), new(10, 6),
             new(2, 11), new(3, 11), new(6, 11), new(7, 11), //  new(9, 6), new(10, 6),
-            new(2, 10), new(3, 10), new(6, 10), new(7, 10), //  new(9, 6), new(10, 6),
-            new(2, 9), new(3, 9), new(6, 9), new(7, 9), //  new(9, 6), new(10, 6),
-            new(2, 8), new(3, 8), new(6, 8), new(7, 8), //  new(9, 5), new(10, 5),
-            new(2, 7), new(3, 7), new(6, 7), new(7, 7), //  new(9, 4), new(10, 4),
-            new(2, 6), new(3, 6), new(6, 6), new(7, 6), //  new(9, 3), new(10, 3),
+            new(2, 10), new(3, 10), new(6, 10), new(7, 10), //  new(9, 5), new(10, 5),
+            new(2, 9), new(3, 9), new(6, 9), new(7, 9), //  new(9, 4), new(10, 4),
+            new(2, 8), new(3, 8), new(6, 8), new(7, 8), //  new(9, 3), new(10, 3),
         };
         throw new NotImplementedException();
     }
@@ -65,15 +65,16 @@ class TestStore : Store
 {
     public List<Cell> FindAll(Entity entity)
     {
+        var y = 3;
         return entity switch
         {
-            Entity.Register => [new C(2, 4), new C(5, 4), new C(8, 5)],
-            Entity.Bag => [new C(3, 4), new C(6, 4), new C(9, 5)],
+            Entity.Register => [new C(2, y), new C(5, y), new C(8, y)],
+            Entity.Bag => [new C(3, y), new C(6, y), new C(9, y)],
             _ => [],
         };
     }
     public int GetWidth() => 16;
-    public int GetHeight() => 16;
+    public int GetHeight() => 17;
     public int GetGarageX() => 2;
     public int GetGarageY() => GetHeight() - 1;
     public bool IsFree(int x, int y) => true;

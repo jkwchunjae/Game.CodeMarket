@@ -6,19 +6,18 @@
 #load "./StaticData"
 #load "./StoreMap"
 #load "./PathManager"
-#load "./DeliveryRobot"
+#load "./ServingRobot"
 
 var staticData = new StaticData();
 var storeMap = new StoreMap(staticData);
 var pathManager = new PathManager(storeMap);
 
-var init = new DeliveryRobotInit
+var init = new ServingRobotInit
 {
-    StartIndex = 0,
-    MyShelfGroups = [0],
+    MyShelfGroups = [2],
 };
 
-var deliveryRobot = new DeliveryRobot(init, staticData, storeMap, pathManager);
+var servingRobot = new ServingRobot(init, staticData, storeMap, pathManager);
 
-deliveryRobot.Run();
+servingRobot.Run();
 
