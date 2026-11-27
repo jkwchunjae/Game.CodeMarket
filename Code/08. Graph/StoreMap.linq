@@ -102,7 +102,7 @@ class ShelfGroup
         // 선반 하단 부터 재고 파악한다.
         var leftX = TopEnter.X;
         var rightX = BottomEnter.X;
-        for (var y = BottomEnter.Y; y < TopEnter.Y; y++)
+        for (var y = BottomEnter.Y; y <= TopEnter.Y; y++)
         {
             // left right가 같은 상품일 수도 있다.
             var leftShelf = TryGetShelfPair(leftX, y);
