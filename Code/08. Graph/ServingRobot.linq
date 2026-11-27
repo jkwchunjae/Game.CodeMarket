@@ -51,10 +51,10 @@ class ServingRobot : RobotBase
                 robot.Move(Direction.Down);
 
                 // 3. 가방에 담아서 보낸다.
-                foreach (var registerCell in _map.Registers)
-                {
-                    MoveAndPutInBag(registerCell);
-                }
+                //foreach (var registerCell in _map.Registers)
+                //{
+                //    MoveAndPutInBag(registerCell);
+                //}
             }
         }
     }
@@ -112,6 +112,7 @@ class ServingRobot : RobotBase
             if (shelfGroupIndex == 3)
                 continue; // 여기는 명품관.
             var shelfGroup = _map.GetShelfGroup(shelfGroupIndex);
+            var topShelfProducts = new List<Product>(); // 앞쪽 배치된 상품 기록. 3, 4 번째에서 중복 담기를 막기 위해.
             for (var i = 0; i < 2; i++)
             {
                 var y = shelfGroup.BottomEnter.Y + i;
@@ -128,10 +129,25 @@ class ServingRobot : RobotBase
                         }
                         else if (pair.Product.IsInSeason())
                         {
-                            if (totalOrders.TryGetValue(pair.Product, out var orderCount))
-                            {
-                                moreProducts[pair.Product] = Math.Max(orderCount, 2);
-                            }
+                            moreProducts[pair.Product] = moreProducts.TryGetValue(pair.Product, out var count) ? count + 3 : 3;
+                        }
+                    }
+                }
+            }
+            for (var i = 2; i < 4; i++)
+            {
+                var y = shelfGroup.BottomEnter.Y + i;
+                var leftX = shelfGroup.BottomEnter.X;
+                var rightX = shelfGroup.TopEnter.X;
+                foreach (var x in new[] { leftX, rightX })
+                {
+                    var pair = shelfGroup.FindPair(x, y);
+                    if (pair != null && topShelfProducts.Contains(pair.Product) == false)
+                    {
+                        if (pair.Product.GetSeason() == null && pair.Product.IsInSeason())
+                        {
+                            // 시즈널 상품은 3개 더 남는다.
+                            moreProducts[pair.Product] = moreProducts.TryGetValue(pair.Product, out var count) ? count + 3 : 3;
                         }
                     }
                 }
@@ -162,7 +178,7 @@ class ServingRobot : RobotBase
         Product[] orderProducts = totalOrderProducts.Keys.ToArray();
         if (shelfGroup.ContainsProducts(orderProducts))
         {
-            Goto(shelfGroup.BottomEnter);
+            Goto(shelfGroup.BottomEnter, true);
             var traverse = shelfGroup.TraverseForServing(totalOrderProducts);
             foreach (var pair in traverse)
             {
@@ -337,7 +353,10 @@ class ServingRobot : RobotBase
     /// <summary>특정 계절에만 주문할 수 있는 상품이 있다. 계절에 맞지 않으면 주문에서 뺀다.</summary>
     void RemoveWhenNotSeason(Order order)
     {
-        RemoveItem(order, item => item.IsInSeason() == false);
+        RemoveItem(order, item =>
+        {
+            return robot.Has(item) == false && item.IsInSeason() == false;
+        });
     }
     void RemoveItem(Order order, Func<Product, bool> condition)
     {
