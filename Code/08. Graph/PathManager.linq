@@ -8,7 +8,7 @@
 interface IPathManager
 {
     /// <summary>시작점과 도착점을 포함하는 최단 경로. 도달할 수 없으면 빈 배열을 반환한다.</summary>
-    MyCell[] GetPath(MyCell start, MyCell end);
+    MyCell[] GetPath(MyCell start, MyCell end, MyCell[] excepted);
 }
 
 record StartEnd(MyCell Start, MyCell End);
@@ -37,10 +37,10 @@ class PathManager : IPathManager
         }
     }
 
-    public MyCell[] GetPath(MyCell start, MyCell end)
+    public MyCell[] GetPath(MyCell start, MyCell end, MyCell[] excepted)
     {
         var cached = GetPathFromCache(start, end);
-        if (cached != null)
+        if (cached != null && excepted.Count() == 0)
         {
             return cached;
         }
@@ -65,7 +65,10 @@ class PathManager : IPathManager
                 }
                 path.Reverse();
                 var result = path.ToArray();
-                _cache[new StartEnd(start, end)] = result;
+                if (excepted.Count() == 0)
+                {
+                    _cache[new StartEnd(start, end)] = result;
+                }
                 return result;
             }
 
@@ -73,7 +76,14 @@ class PathManager : IPathManager
             {
                 if (previous.TryAdd(next, current))
                 {
-                    queue.Enqueue(next);
+                    if (excepted.Any(e => e.X == next.X && e.Y == next.Y))
+                    {
+                        // 이건 넣지 않는다.
+                    }
+                    else
+                    {
+                        queue.Enqueue(next);
+                    }
                 }
             }
         }
