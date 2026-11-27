@@ -64,7 +64,7 @@ class StaticData : IStaticData
             new EntityProductPair(Entity.LobsterFridge, Product.Lobster),
             new EntityProductPair(Entity.VendingMachine, Product.Chocolate),
             new EntityProductPair(Entity.PopcornMachine, Product.Popcorn),
-            new EntityProductPair(Entity.ChristmasTree, Product.Tree),
+            new EntityProductPair(Entity.TreeStand, Product.Tree),
             new EntityProductPair(Entity.CognacCabinet, Product.Cognac),
             new EntityProductPair(Entity.IceCreamCounter, Product.Icecream),
             new EntityProductPair(Entity.HoneyStall, Product.Honey),
