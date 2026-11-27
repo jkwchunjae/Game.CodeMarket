@@ -162,7 +162,8 @@ class DeliveryRobot : RobotBase
         foreach (var shelfOrder in orderShelfs)
         {
             // 한 상품당 최대 3개만 신청하자. (한 상품이 너무 독점하지 않도록 방지)
-            var deliveryCount = Math.Min(5, shelfOrder.Capacity - shelfOrder.Stock);
+            //var deliveryCount = Math.Min(5, shelfOrder.Capacity - shelfOrder.Stock);
+            var deliveryCount = shelfOrder.Capacity - shelfOrder.Stock;
             if (robot.Has(shelfOrder.Product))
             {
                 // 내가 들고있는건 주문할 필요 없다.
