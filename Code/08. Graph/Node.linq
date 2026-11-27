@@ -387,9 +387,9 @@ class Graph : IGraph
             // 선반 내부는 양방향으로 연결한다.
             for (var y = shelfBox.Y; y <= shelfBox.YEnd; y++)
             {
-                if (y != shelfBox.YEnd)
+                //if (y != shelfBox.YEnd)
                     graph.nodes[shelfBox.X, y].CanGotoRight();
-                if (y != shelfBox.Y)
+                //if (y != shelfBox.Y)
                     graph.nodes[shelfBox.X + 1, y].CanGotoLeft();
             }
 

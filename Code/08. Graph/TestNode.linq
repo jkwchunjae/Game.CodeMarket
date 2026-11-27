@@ -39,10 +39,12 @@ class TestStoreMap : IStoreMap
     {
         return new MyCell[]
         {
-            /*new(1, 6),*/ new(2, 6), new(5, 6), new(6, 6),  new(9, 6), new(10, 6),
-            new(1, 5), new(2, 5), new(5, 5), new(6, 5),  new(9, 5), new(10, 5),
-            new(1, 4), new(2, 4), new(5, 4), new(6, 4),  new(9, 4), new(10, 4),
-            new(1, 3), new(2, 3), new(5, 3), new(6, 3),  new(9, 3), new(10, 3),
+            new(2, 11), new(3, 11), new(6, 11), new(7, 11), //  new(9, 6), new(10, 6),
+            new(2, 10), new(3, 10), new(6, 10), new(7, 10), //  new(9, 6), new(10, 6),
+            new(2, 9), new(3, 9), new(6, 9), new(7, 9), //  new(9, 6), new(10, 6),
+            new(2, 8), new(3, 8), new(6, 8), new(7, 8), //  new(9, 5), new(10, 5),
+            new(2, 7), new(3, 7), new(6, 7), new(7, 7), //  new(9, 4), new(10, 4),
+            new(2, 6), new(3, 6), new(6, 6), new(7, 6), //  new(9, 3), new(10, 3),
         };
         throw new NotImplementedException();
     }
@@ -65,14 +67,14 @@ class TestStore : Store
     {
         return entity switch
         {
-            Entity.Register => [new C(2, 0), new C(5, 0)],
-            Entity.Bag => [new C(3, 0), new C(6, 0)],
+            Entity.Register => [new C(2, 4), new C(5, 4), new C(8, 5)],
+            Entity.Bag => [new C(3, 4), new C(6, 4), new C(9, 5)],
             _ => [],
         };
     }
-    public int GetWidth() => 12;
-    public int GetHeight() => 11;
-    public int GetGarageX() => 4;
+    public int GetWidth() => 16;
+    public int GetHeight() => 16;
+    public int GetGarageX() => 2;
     public int GetGarageY() => GetHeight() - 1;
     public bool IsFree(int x, int y) => true;
 
