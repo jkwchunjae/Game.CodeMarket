@@ -27,12 +27,14 @@ class DeliveryRobotInit
 {
     public int StartIndex { get; set; }
     public int[] MyShelfGroups { get; set; }
+    public int GarageX { get; set; }
 }
 class DeliveryRobot : RobotBase
 {
     private List<ShelfData> _shelfs = new();
     private readonly int _startIndex;
     private readonly int[] _myShelfGroups;
+    private readonly MyCell _garageCell;
     private readonly Product[] _myProducts;
 
     public DeliveryRobot(DeliveryRobotInit init, IStaticData staticData, IStoreMap map, IPathManager pathManager)
@@ -40,6 +42,7 @@ class DeliveryRobot : RobotBase
     {
         _startIndex = init.StartIndex;
         _myShelfGroups = init.MyShelfGroups;
+        _garageCell = new MyCell(init.GarageX, store.GetGarageY());
         _myProducts = _myShelfGroups
             .Select(index => map.GetShelfGroup(index))
             .SelectMany(group => group.TargetProducts)
@@ -60,6 +63,7 @@ class DeliveryRobot : RobotBase
                 GotoGarage();
                 // 하차
                 PickFromTruck();
+                robot.Move(Direction.Down);
                 // 선반에 넣는다.
                 PutToShelf();
             }
@@ -69,6 +73,7 @@ class DeliveryRobot : RobotBase
                 if (store.IsTruckHere() && robot.IsAtTruck())
                 {
                     PickFromTruck();
+                    robot.Move(Direction.Down);
                     PutToShelf();
                     GotoGarage();
                 }
@@ -79,7 +84,7 @@ class DeliveryRobot : RobotBase
     /// <summary>차고 앞으로 간다.</summary>
     private void GotoGarage()
     {
-        Goto(_map.GarageCell);
+        Goto(_garageCell);
         robot.Turn(store.GetGarageSide());
     }
 
@@ -158,15 +163,16 @@ class DeliveryRobot : RobotBase
                 var myCount = robot.GetCarried().Count(x => x == shelfOrder.Product);
                 deliveryCount = Math.Max(0, deliveryCount - myCount);
             }
-            for (var i = 0; i < deliveryCount; i++)
-            {
-                AddProductIfPossible(shelfOrder.Product);
-            }
+            AddProductIfPossibleWithCount(shelfOrder.Product, deliveryCount);
+        }
+        // 빵이 주문내역에 있으면 
+        if (robot.GetList().Count(x => x == Product.Bread) > 0)
+        {
+            AddProductIfPossibleWithCount(Product.Bread, 1);
         }
         if (store.GetSeason() == Season.Spring)
         {
-            AddProductIfPossible(Product.Fertilizer);
-            AddProductIfPossible(Product.Fertilizer);
+            AddProductIfPossibleWithCount(Product.Fertilizer, 2);
         }
         if (robot.GetList().Any())
         {
@@ -178,13 +184,16 @@ class DeliveryRobot : RobotBase
             return false;
         }
     }
-    void AddProductIfPossible(Product product)
+    void AddProductIfPossibleWithCount(Product product, int count)
     {
-        if (product.GetSeason() == null || product.GetSeason() == store.GetSeason())
+        for (var i = 0; i < count; i++)
         {
-            if (robot.GetList().Count() < store.GetTruckCapacity())
+            if (product.GetSeason() == null || product.GetSeason() == store.GetSeason())
             {
-                robot.GetList().Add(product);
+                if (robot.GetList().Count() < store.GetTruckCapacity())
+                {
+                    robot.GetList().Add(product);
+                }
             }
         }
     }
@@ -203,28 +212,6 @@ class DeliveryRobot : RobotBase
                 if (robot.IsAtTruck())
                 {
                     break;
-                }
-                else
-                {
-                    while (robot.CanMove(Direction.Right))
-                    {
-                        robot.Move(Direction.Right);
-                    }
-                    while (robot.CanMove(Direction.Left))
-                    {
-                        robot.Move(Direction.Left);
-                    }
-                }
-            }
-            else
-            {
-                while (robot.CanMove(Direction.Right))
-                {
-                    robot.Move(Direction.Right);
-                }
-                while (robot.CanMove(Direction.Left))
-                {
-                    robot.Move(Direction.Left);
                 }
             }
         }
