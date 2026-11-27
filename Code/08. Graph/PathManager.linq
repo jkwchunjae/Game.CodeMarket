@@ -11,18 +11,40 @@ interface IPathManager
     MyCell[] GetPath(MyCell start, MyCell end);
 }
 
+record StartEnd(MyCell Start, MyCell End);
 class PathManager : IPathManager
 {
     private readonly IStoreMap _map;
     private readonly IGraph _graph;
+    private readonly Dictionary<StartEnd, MyCell[]> _cache = new();
+    
     public PathManager(IStoreMap map)
     {
         _map = map;
         _graph = Graph.Create(map);
     }
+    
+    private MyCell[] GetPathFromCache(MyCell start, MyCell end)
+    {
+        if (_cache.Any(x => x.Key.Start.Equal(start) && x.Key.End.Equal(end)))
+        {
+            var cached = _cache.FirstOrDefault(x => x.Key.Start.Equal(start) && x.Key.End.Equal(end));
+            return cached.Value;
+        }
+        else
+        {
+            return null;
+        }
+    }
 
     public MyCell[] GetPath(MyCell start, MyCell end)
     {
+        var cached = GetPathFromCache(start, end);
+        if (cached != null)
+        {
+            return cached;
+        }
+        
         var startNode = _graph.GetNode(start.X, start.Y);
         var endNode = _graph.GetNode(end.X, end.Y);
         var queue = new Queue<INode>();
@@ -42,7 +64,9 @@ class PathManager : IPathManager
                     path.Add(new MyCell(node.X, node.Y));
                 }
                 path.Reverse();
-                return path.ToArray();
+                var result = path.ToArray();
+                _cache[new StartEnd(start, end)] = result;
+                return result;
             }
 
             foreach (var next in current.Next)
