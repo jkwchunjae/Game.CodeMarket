@@ -48,6 +48,7 @@ class ServingRobot : RobotBase
                 {
                     PickFromShelf(groupIndex, totalOrderProducts);
                 }
+                robot.Move(Direction.Down);
 
                 // 3. 가방에 담아서 보낸다.
                 foreach (var registerCell in _map.Registers)
@@ -70,7 +71,8 @@ class ServingRobot : RobotBase
                 totalOrderProducts[product] = totalOrderProducts.TryGetValue(product, out var totalCount) ? totalCount + count : count;
             }
         }
-        return totalOrderProducts;
+        var newOrders = AddMoreProduct(totalOrderProducts);
+        return newOrders;
     }
     Dictionary<Product, int> MoveAndTakeOrder(MyCell registerCell)
     {
@@ -99,6 +101,54 @@ class ServingRobot : RobotBase
             }
         }
         return orderProducts;
+    }
+    /// <summary>주문 받은 것 보다 더 들고 있어보자. 첫 줄 5개씩, 두번째 줄 3개씩</summary>
+    Dictionary<Product, int> AddMoreProduct(Dictionary<Product, int> totalOrders)
+    {
+        Dictionary<Product, int> moreProducts = new Dictionary<Product, int>();
+        
+        foreach (var shelfGroupIndex in _myShelfGroups)
+        {
+            var shelfGroup = _map.GetShelfGroup(shelfGroupIndex);
+            for (var i = 0; i < 2; i++)
+            {
+                var y = shelfGroup.BottomEnter.Y + i;
+                var leftX = shelfGroup.BottomEnter.X;
+                var rightX = shelfGroup.TopEnter.X;
+                foreach (var x in new[] { leftX, rightX })
+                {
+                    var pair = shelfGroup.FindPair(x, y);
+                    if (pair != null)
+                    {
+                        if (pair.Product.GetSeason() == null)
+                        {
+                            moreProducts[pair.Product] = (i == 0 ? 5 : 3);
+                        }
+                        else if (pair.Product.IsInSeason())
+                        {
+                            if (totalOrders.TryGetValue(pair.Product, out var orderCount))
+                            {
+                                moreProducts[pair.Product] = Math.Max(orderCount, 2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        var newOrders = new Dictionary<Product, int>(totalOrders);
+        foreach (var (product, count) in moreProducts)
+        {
+            if (newOrders.TryGetValue(product, out var orderCount))
+            {
+                newOrders[product] = Math.Max(orderCount, count);
+            }
+            else
+            {
+                newOrders[product] = count;
+            }
+        }
+        return newOrders;
     }
     #endregion
     
