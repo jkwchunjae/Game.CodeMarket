@@ -307,18 +307,19 @@ class DeliveryRobot : RobotBase
             {
                 Goto(pair.Cell);
                 var currentShelfStock = store.GetStock(pair.ShelfPosition.X, pair.ShelfPosition.Y);
-                var currentShelfCapacity = _shelfs.FirstOrDefault(x => x.ShelfPosition.X == pair.ShelfPosition.X && x.ShelfPosition.Y == pair.ShelfPosition.Y)?.Capacity;
+                var currentShelfCapacity = _shelfs.FirstOrDefault(x => x.ShelfPosition.Equal(pair.ShelfPosition))?.Capacity;
                 var isFull = currentShelfStock >= currentShelfCapacity;
                 if (isFull)
                     continue;
-                
-                robot.Turn(pair.Direction);
 
                 while (robot.Has(pair.Product))
                 {
                     // 선반이 꽉 찬 경우
                     if (store.GetStock(pair.ShelfPosition.X, pair.ShelfPosition.Y) >= currentShelfCapacity)
                         break;
+                    
+                    if (robot.GetFacing() != pair.Direction)
+                        robot.Turn(pair.Direction);
                     
                     // 그 외 실패.
                     if (robot.PutOnShelf(pair.Product) == false)
