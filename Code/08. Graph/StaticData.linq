@@ -55,6 +55,21 @@ class StaticData : IStaticData
             new EntityProductPair(Entity.WatermelonTable, Product.Watermelon),
             new EntityProductPair(Entity.TangerineTable, Product.Tangerine),
             new EntityProductPair(Entity.JamTable, Product.Jam),
+            new EntityProductPair(Entity.StrawberryStand, Product.Strawberry),
+            new EntityProductPair(Entity.FireworksStand, Product.Fireworks),
+            new EntityProductPair(Entity.MaskStand, Product.Mask),
+            new EntityProductPair(Entity.TulipCounter, Product.Tulips),
+            new EntityProductPair(Entity.MeatFridge, Product.Steak),
+            new EntityProductPair(Entity.WhiskyCabinet, Product.Whisky),
+            new EntityProductPair(Entity.LobsterFridge, Product.Lobster),
+            new EntityProductPair(Entity.VendingMachine, Product.Chocolate),
+            new EntityProductPair(Entity.PopcornMachine, Product.Popcorn),
+            new EntityProductPair(Entity.ChristmasTree, Product.Tree),
+            new EntityProductPair(Entity.CognacCabinet, Product.Cognac),
+            new EntityProductPair(Entity.IceCreamCounter, Product.Icecream),
+            new EntityProductPair(Entity.HoneyStall, Product.Honey),
+            new EntityProductPair(Entity.CaviarFridge, Product.Caviar),
+            //new EntityProductPair(Entity.CoffeeMachine, Product.Coffee),
         ];
     }
     public bool IsProduct(Entity entity)
