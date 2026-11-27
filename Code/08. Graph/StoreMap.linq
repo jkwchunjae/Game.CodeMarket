@@ -22,10 +22,11 @@ record CellProductPair(MyCell ShelfPosition, MyCell Cell, Product Product, Direc
 {
     public int X => Cell.X;
     public int Y => Cell.Y;
+    public int Stock => store.GetStock(ShelfPosition.X, ShelfPosition.Y);
 
     public bool ShelfIsEmpty()
     {
-        return store.GetStock(ShelfPosition.X, ShelfPosition.Y) == 0;
+        return Stock == 0;
     }
 }
 
@@ -92,10 +93,55 @@ class ShelfGroup
         return list.ToArray();
     }
 
-    public CellProductPair[] TraverseForServing()
+    /// <summary>서빙 로봇을 위한 경로 반환. 필요한 물품을 받은 뒤 선반 재고를 고려해서 경로를 반환한다.</summary>
+    public CellProductPair[] TraverseForServing(Dictionary<Product, int> order)
     {
+        order = order.ToDictionary(o => o.Key, o => o.Value); // copy
+        var turnY = 0;
+        
+        // 선반 하단 부터 재고 파악한다.
+        var leftX = TopEnter.X;
+        var rightX = BottomEnter.X;
+        for (var y = BottomEnter.Y; y < TopEnter.Y; y++)
+        {
+            // left right가 같은 상품일 수도 있다.
+            var leftShelf = TryGetShelfPair(leftX, y);
+            if (leftShelf != null)
+            {
+                if (order.TryGetValue(leftShelf.Product, out var leftOrderCount))
+                {
+                    // 선반에 뭐라도 하나라도 있으면 들러야 한다.
+                    if (leftShelf.Stock > 0 && leftOrderCount > 0)
+                    {
+                        // 필요한 상품 수 업데이트.
+                        order[leftShelf.Product] = Math.Max(0, leftOrderCount - leftShelf.Stock);
+                        turnY = y;
+                    }
+                }
+            }
+            var rightShelf = TryGetShelfPair(rightX, y);
+            if (rightShelf != null)
+            {
+                if (order.TryGetValue(rightShelf.Product, out var rightOrderCount))
+                {
+                    // 선반에 뭐라도 하나라도 있으면 들러야 한다.
+                    if (rightShelf.Stock > 0 && rightOrderCount > 0)
+                    {
+                        // 필요한 상품 수 업데이트.
+                        order[rightShelf.Product] = Math.Max(0, rightOrderCount - rightShelf.Stock);
+                        turnY = y;
+                    }
+                }
+            }
+        }
+        if (turnY == 0)
+        {
+            // 이 선반 목록에선 집을게 없다.
+            return [];
+        }
+        
         var list = new List<CellProductPair>();
-        for (var y = BottomEnter.Y; y <= TopEnter.Y; y++)
+        for (var y = BottomEnter.Y; y <= turnY; y++)
         {
             var x = BottomEnter.X;
             CellProductPair? pair = FindPair(x, y);
@@ -104,7 +150,7 @@ class ShelfGroup
                 list.Add(pair);
             }
         }
-        for (var y = TopEnter.Y; y >= BottomEnter.Y; y--)
+        for (var y = turnY; y >= BottomEnter.Y; y--)
         {
             var x = TopEnter.X;
             CellProductPair? pair = FindPair(x, y);
@@ -115,6 +161,11 @@ class ShelfGroup
         }
         
         return list.ToArray();
+    }
+    
+    CellProductPair TryGetShelfPair(int x, int y)
+    {
+        return _pairs.FirstOrDefault(pair => pair.X == x && pair.Y == y);
     }
 }
 

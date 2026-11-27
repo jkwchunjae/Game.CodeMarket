@@ -101,15 +101,26 @@ class DeliveryRobot : RobotBase
         {
             // 2. 첫번째 선반그룹 TopEnter에서 순회한다.
             Goto(shelfGroup.TopEnter);
+            CellProductPair prevPair = null;
+            ShelfData prevShelf = null;
             foreach (var pair in shelfGroup.TraverseForDelivery())
             {
                 Goto(pair.Cell);
+                if (prevPair != null && prevPair.X == pair.X && prevPair.Product == pair.Product && prevShelf != null)
+                {
+                    // 2칸 짜리 선반은 한 칸만 처리한다.
+                    prevShelf.Cells.Add(pair.Cell);
+                    continue;
+                }
                 robot.Turn(pair.Direction);
                 var shelf = robot.GetShelf();
                 var shelfCapacity = shelf.GetCapacity();
                 var entity = _static.GetEntityFromProduct(pair.Product);
                 var shelfData = new ShelfData(pair.ShelfPosition, pair.Cell, pair.Product, shelf.GetCapacity());
                 _shelfs.Add(shelfData);
+                
+                prevPair = pair;
+                prevShelf = shelfData;
             }
             // 3. 순회 후 다음 선반그룹 TopEnter로 가서 순회한다.
             // 따로 뭘 할 필요는 없다. 다음 루프 Goto(shelfGroup.TopEnter);가 해준다.
@@ -140,7 +151,7 @@ class DeliveryRobot : RobotBase
         foreach (var shelfOrder in orderShelfs)
         {
             // 한 상품당 최대 3개만 신청하자. (한 상품이 너무 독점하지 않도록 방지)
-            var deliveryCount = Math.Min(3, shelfOrder.Capacity - shelfOrder.Stock);
+            var deliveryCount = Math.Min(5, shelfOrder.Capacity - shelfOrder.Stock);
             if (robot.Has(shelfOrder.Product))
             {
                 // 내가 들고있는건 주문할 필요 없다.
@@ -169,9 +180,12 @@ class DeliveryRobot : RobotBase
     }
     void AddProductIfPossible(Product product)
     {
-        if (robot.GetList().Count() < store.GetTruckCapacity())
+        if (product.GetSeason() == null || product.GetSeason() == store.GetSeason())
         {
-            robot.GetList().Add(product);
+            if (robot.GetList().Count() < store.GetTruckCapacity())
+            {
+                robot.GetList().Add(product);
+            }
         }
     }
     #endregion
@@ -251,7 +265,7 @@ class DeliveryRobot : RobotBase
             {
                 Goto(pair.Cell);
                 var currentShelfStock = store.GetStock(pair.ShelfPosition.X, pair.ShelfPosition.Y);
-                var currentShelfCapacity = _shelfs.First(x => x.ShelfPosition.X == pair.ShelfPosition.X && x.ShelfPosition.Y == pair.ShelfPosition.Y).Capacity;
+                var currentShelfCapacity = _shelfs.FirstOrDefault(x => x.ShelfPosition.X == pair.ShelfPosition.X && x.ShelfPosition.Y == pair.ShelfPosition.Y)?.Capacity;
                 var isFull = currentShelfStock >= currentShelfCapacity;
                 if (isFull)
                     continue;

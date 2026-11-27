@@ -111,11 +111,16 @@ class ServingRobot : RobotBase
         if (shelfGroup.ContainsProducts(orderProducts))
         {
             Goto(shelfGroup.BottomEnter);
-            foreach (var pair in shelfGroup.TraverseForServing())
+            var traverse = shelfGroup.TraverseForServing(totalOrderProducts);
+            var reversedTraverse = traverse.Reverse().ToList();
+            foreach (var pair in traverse)
             {
                 Goto(pair.Cell);
                 if (RobotIsFull())
                     return;
+
+                // 나머지 선반에서 꺼낼게 없으면 early return.
+                reversedTraverse.Remove(pair);
 
                 if (totalOrderProducts.TryGetValue(pair.Product, out var remainCount))
                 {
@@ -142,6 +147,42 @@ class ServingRobot : RobotBase
                 }
             }
         }
+    }
+    
+    bool NeedMoreShelf(Dictionary<Product, int> totalOrderProducts, CellProductPair[] leftShelfs)
+    {
+        var myCarried = robot.GetCarried()
+            .GroupBy(p => p)
+            .ToDictionary(p => p.Key, p => p.Count());
+            
+        #region leftOrders: 더 담아야 할 상품 수 계산
+        var leftOrders = new Dictionary<Product, int>();
+        foreach (var (product, orderCount) in totalOrderProducts)
+        {
+            if (myCarried.TryGetValue(product, out var hasCount))
+            {
+                if (hasCount >= orderCount)
+                {
+                    // 이 상품은 다 담았다.
+                }
+                else
+                {
+                    var needCount = orderCount - hasCount;
+                    leftOrders[product] = needCount;
+                }
+            }
+        }
+        #endregion
+        
+        // 남은 선반 중 더 담아야 할 상품이 하나라도 있으면 true !
+        foreach (var pair in leftShelfs)
+        {
+            if (leftOrders.TryGetValue(pair.Product, out var needCount))
+            {
+                return true;
+            }
+        }
+        return false;
     }
     
     /// <summary>로봇이 count만큼 들고 있는가?</summary>
